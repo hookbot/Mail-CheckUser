@@ -16,7 +16,7 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use Carp;
 BEGIN {
@@ -86,7 +86,7 @@ sub check_email($) {
     _pm_log "check_email: checking \"$email\"";
 
     # split email address on username and hostname
-    my($username, $hostname) = split '@', $email;
+    my($username, $hostname) = $email =~ /^(.*)@(.*)$/;
     # return false if it impossible
     unless(defined $hostname) {
 	_pm_log "check_email: can't split email \"$email\" on username and hostname";

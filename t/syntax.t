@@ -6,7 +6,7 @@ require 't/check.pl';
 $Mail::CheckUser::Skip_Network_Checks = 1;
 
 @ok_emails = qw(foo@aaa.bbb foo.bar@aaa.bbb foo@aaa.bbb.ccc foo.bar@aaa.bbb.ccc foo@aaa.aaa -gizmo-@mail.ru);
-@bad_emails = qw(bar@aaa .bar@aaa.bbb bar.@aaa.bbb bar@aaa.bbb. bar@.aaa.bbb <>[]@aaa.bbb);
+@bad_emails = qw(bar@aaa .bar@aaa.bbb bar.@aaa.bbb bar@aaa.bbb. bar@.aaa.bbb <>[]@aaa.bbb brothren@hiron.bebrothren@hiron.bel.krid.crimea.ua);
 push @bad_emails, qw(akorobkova@yahoo/com ced);
 push @bad_emails, 'qqqqqqqqq wwwwwwww@test.com';
 push @bad_emails, '÷ÁÛ e-mail OlegNick@nursat.kz';

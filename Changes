@@ -1,5 +1,9 @@
 Revision history for Perl module Mail::CheckUser
 
+1.01  Tue Jul  3 15:40:40 2001
+	- Fixed bug which allowed to pass email addresses with two or
+	  more '@' chars as correct
+
 1.00  Wed Jun 27 19:03:20 2001
 	- Added more tests for email address syntax check.
 	- Fixed spelling (with ispell) it this file :).
