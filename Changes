@@ -1,5 +1,9 @@
 Revision history for Perl module Mail::CheckUser
 
+0.17  Mon Sep 25 21:06:06 2000
+	- Added workaround against annoying warning under Perl 5.6 in
+	  Net::DNS module which is used by this module
+
 0.16  Mon Sep 11 22:44:11 2000
 	- Add another check: now module can verify user on SMTP servers
 	  using combination of MAIL and RCPT commands. This check can detect

@@ -12,12 +12,20 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '0.16';
+$VERSION = '0.17';
 
 use Carp;
-use Net::DNS 0.12;
-use Net::SMTP 2.13;
-use IO::Handle 1.21;
+BEGIN {
+    # this is a workaround againt anoying warning under Perl 5.6
+    local $^W;
+    if($] > 5.00503) {
+	$^W = 0;
+    }
+    require Net::DNS;
+    import Net::DNS;
+}
+use Net::SMTP;
+use IO::Handle;
 
 use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
             $Timeout $Treat_Timeout_As_Fail $Debug

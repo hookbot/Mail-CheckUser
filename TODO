@@ -1,5 +1,5 @@
 1) Do not allow mail server's on private networks like 192.168.*.*
 
-2) Add checking mailboxes on SMTP server with MAIL/RCPT commands
+2) OO interface
 
-3) OO interface
+3) More correct syntax checking (better comformance to RFCs)? 
