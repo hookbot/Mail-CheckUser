@@ -16,7 +16,7 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '1.01';
+$VERSION = '1.02';
 
 use Carp;
 BEGIN {
@@ -406,7 +406,7 @@ valid.
 
 	use Mail::CheckUser qw(check_email);
 
-	my $email = "blabla@foo.bar";
+	my $email = 'blabla@foo.bar';
 
 	if(check_email($email)) {
 		print "E-mail address <$email> is OK\n";
