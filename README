@@ -14,9 +14,7 @@ It makes several checks:
    if mailbox is valid. Old versions of this module performed this
    check via the VRFY command.  Now the module uses another check; it
    uses a combination of MAIL and RCPT commands which simulates
-   sending an email. It can detect bad mailboxes in many cases. For
-   example, hotmail.com mailboxes can be verified with the MAIL/RCPT
-   check.
+   sending an email. It can detect bad mailboxes in many cases.
 
 This module was designed with CGIs (or any other dynamic Web content
 programmed with Perl) in mind. Usually it is required to quickly check

@@ -8,7 +8,7 @@ $Mail::CheckUser::Skip_SMTP_Checks = 0;
 $Mail::CheckUser::Timeout = 120;
 
 @ok_emails = qw(m_ilya@agava.com);
-@bad_emails = qw(unknown@for.bar fhjfewovborvtrb@hotmail.com);
+@bad_emails = qw(unknown@for.bar);
  
 start(scalar(@ok_emails) + scalar(@bad_emails));
  

@@ -1,5 +1,15 @@
 Revision history for Perl module Mail::CheckUser
 
+1.17  Sat Nov 30 23:02:20 2002
+        - Be polite we SMTP servers and try to issue QUIT command
+          before disconnecting.
+        - Workaround Perl bug (#18784) which causes userpart regexp
+          matching failures with correct userparts in Perl 5.8.0.
+          Patch by Rodger Bagnall.
+        - Remove from documentation notice that MAIL/RCPT check
+          works with mailboxes on hotmail.com. It seems it is not
+          true anymore.
+
 1.16  Wed Nov 18 09:30:00 2002
         - Add $Mail::CheckUser::Net_DNS_Resolver feature
           to allow customizeable Net::DNS::Resolver object.

@@ -26,7 +26,7 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_SMTP_UNREACHABLE)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.16';
+$VERSION = '1.17';
 
 use Carp;
 use Net::DNS;
@@ -125,7 +125,7 @@ sub last_check() {
 # NOTE: it doesn't strictly follow RFC822
 # because of what registrars now allow.
 my $DOMAIN_RE   = qr/(?:[\da-zA-Z]+ -+)* [\da-zA-Z]+/x;
-my $HOSTNAME_RE = qr/(?:$DOMAIN_RE \.)+ [a-zA-Z]+/x;
+my $HOSTNAME_RE = qr/^ (?:$DOMAIN_RE \.)+ [a-zA-Z]+ $/xo;
 
 sub check_hostname_syntax($) {
     my($hostname) = @_;
@@ -133,7 +133,7 @@ sub check_hostname_syntax($) {
     _pm_log "check_hostname_syntax: checking \"$hostname\"";
 
     # check if hostname syntax is correct
-    if($hostname =~ /^ $HOSTNAME_RE $/xo) {
+    if($hostname =~ $HOSTNAME_RE) {
         return _result(CU_OK, 'correct hostname syntax');
     } else {
         return _result(CU_BAD_SYNTAX, 'bad hostname syntax');
@@ -145,7 +145,7 @@ sub check_hostname_syntax($) {
 my $STRING_RE = ('[' . quotemeta(join '',
                                  grep(!/[<>()\[\]\\\.,;:\@"]/, # ["], UnBug Emacs
                                       map chr, 33 .. 126)) . ']');
-my $USERNAME_RE = qr/(?:$STRING_RE+ \.)* $STRING_RE+/x;
+my $USERNAME_RE = qr/^ (?:$STRING_RE+ \.)* $STRING_RE+ $/xo;
 
 
 sub check_username_syntax($) {
@@ -154,7 +154,7 @@ sub check_username_syntax($) {
     _pm_log "check_username_syntax: checking \"$username\"";
 
     # check if username syntax is correct
-    if($username =~ /^ $USERNAME_RE $/xo) {
+    if($username =~ $USERNAME_RE) {
         return _result(CU_OK, 'correct username syntax');
     } else {
         return _result(CU_BAD_SYNTAX, 'bad username syntax');
@@ -307,11 +307,22 @@ sub check_user_on_host($$$$) {
 
     # send RCPT TO command
     if($smtp->to("$username\@$hostname")) {
+        # give server opportunity to exist gracefully by telling it QUIT
+        my $tout = _calc_timeout($timeout, $start_time);
+        if($tout) {
+            $smtp->timeout($tout);
+            $smtp->quit;
+        }
+
         return _result(CU_OK, 'SMTP server accepts username');
     } else {
         # check if verify returned error because of timeout
         my $tout = _calc_timeout($timeout, $start_time);
         return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
+
+        # give server opportunity to exist gracefully by telling it QUIT
+        $smtp->timeout($tout);
+        $smtp->quit;
 
         if($smtp->code == 550 or $smtp->code == 551 or $smtp->code == 553) {
             return _result(CU_UNKNOWN_USER, 'no such user');
@@ -419,8 +430,7 @@ It tries to connect to an email server directly via SMTP to check if
 mailbox is valid.  Old versions of this module performed this check
 via the VRFY command.  Now the module uses another check; it uses a
 combination of MAIL and RCPT commands which simulates sending an
-email.  It can detect bad mailboxes in many cases.  For example,
-hotmail.com mailboxes can be verified with the MAIL/RCPT check.
+email.  It can detect bad mailboxes in many cases.
 
 =back
 
