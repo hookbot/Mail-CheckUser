@@ -27,7 +27,7 @@ This module requires next Perl modules:
 3) IO::Handle (IO package)
 
 Perl distributions before 5.6 contain version of IO::Handle which has bugs
-in timeouts handling. Downloaded latest version from CPAN if you haven't did
+in timeouts handling. Download latest version from CPAN if you haven't did
 it before.
 
 INSTALLATION

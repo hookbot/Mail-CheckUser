@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::CheckUser.
 
+0.12  Wed Jul 19 20:33:29 2000
+	- Fixed bug in SMTP return codes handling (thanks to Rolf Beutner)
+
 0.11  Fri Jul 14 03:16:45 2000
         - Added global variable $Mail::CheckUser::Treat_Timeout_As_Fail
 	- Updated documentation
@@ -42,7 +45,4 @@ Revision history for Perl extension Mail::CheckUser.
 
 0.01  Tue Nov  2 04:34:00 1999
 	- first working version
-
-0.01  Fri Oct 29 17:37:27 1999
-	- original version; created by h2xs 1.18
 

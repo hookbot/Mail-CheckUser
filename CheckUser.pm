@@ -14,7 +14,7 @@ require Exporter;
 	check_username
 );
 
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 use Carp;
 use Net::DNS 0.12;
@@ -256,7 +256,7 @@ sub check_user_on_host($$$) {
 			_pm_log "check_user_on_host: timeout";
 			return $Treat_Timeout_As_Fail ? 0 : 1;
 		} else {
-			if($smtp->status == 550 or $smtp->status == 551 or $smtp->status == 553) {
+			if($smtp->code == 550 or $smtp->code == 551 or $smtp->code == 553) {
 				_pm_log "check_user_on_host: no such user \"$username\" on \"$hostname\"";
 				return 0;
 			} else {
