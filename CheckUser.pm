@@ -23,10 +23,11 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_DNS_TIMEOUT
                               CU_UNKNOWN_USER
                               CU_SMTP_TIMEOUT
-                              CU_SMTP_UNREACHABLE)];
+                              CU_SMTP_UNREACHABLE
+                              CU_MAILBOX_FULL)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 use Carp;
 use Net::DNS;
@@ -36,6 +37,7 @@ use IO::Handle;
 use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
             $Skip_SYN $Net_DNS_Resolver
             $Timeout $Treat_Timeout_As_Fail $Debug
+            $Treat_Full_As_Fail
             $Sender_Addr $Helo_Domain $Last_Check);
 
 # if it is true Mail::CheckUser doesn't make network checks
@@ -47,9 +49,12 @@ $Skip_SMTP_Checks = 0;
 $Timeout = 60;
 # if it is true the Net::Ping SYN/ACK check will be skipped
 $Skip_SYN = 0;
-# if it is true Mail::CheckUser treats timeouted checks as failed
-# checks
+# if it is true Mail::CheckUser treats timeouted checks as
+# failed checks
 $Treat_Timeout_As_Fail = 0;
+# if it is true Mail::CheckUser treats mailbox full message
+# as failed checks
+$Treat_Full_As_Fail = 0;
 # sender addr used in MAIL/RCPT check
 $Sender_Addr = 'check@user.com';
 # sender domain used in HELO SMTP command - if undef lets
@@ -61,23 +66,23 @@ $Net_DNS_Resolver = undef;
 $Debug = 0;
 
 # check_email EMAIL
-sub check_email($);
+sub check_email( $ );
 # last_check
-sub last_check();
+sub last_check( );
 # check_hostname_syntax HOSTNAME
-sub check_hostname_syntax($);
+sub check_hostname_syntax( $ );
 # check_username_syntax USERNAME
-sub check_username_syntax($);
+sub check_username_syntax( $ );
 # check_network HOSTNAME, USERNAME
-sub check_network($$);
+sub check_network( $$ );
 # check_user_on_host MSERVER, USERNAME, HOSTNAME, TIMEOUT
-sub check_user_on_host($$$$);
+sub check_user_on_host( $$$$ );
 # _calc_timeout FULL_TIMEOUT START_TIME
-sub _calc_timeout($$);
+sub _calc_timeout( $$ );
 # _pm_log LOG_STR
-sub _pm_log($);
+sub _pm_log( $ );
 # _result RESULT, REASON
-sub _result($$);
+sub _result( $$ );
 
 # check result codes
 use constant CU_OK               => 0;
@@ -87,6 +92,7 @@ use constant CU_DNS_TIMEOUT      => 3;
 use constant CU_UNKNOWN_USER     => 4;
 use constant CU_SMTP_TIMEOUT     => 5;
 use constant CU_SMTP_UNREACHABLE => 6;
+use constant CU_MAILBOX_FULL     => 7;
 
 sub check_email($) {
     my($email) = @_;
@@ -320,16 +326,19 @@ sub check_user_on_host($$$$) {
         my $tout = _calc_timeout($timeout, $start_time);
         return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
 
+        my $code = $smtp->code;
+
         # give server opportunity to exist gracefully by telling it QUIT
         $smtp->timeout($tout);
         $smtp->quit;
 
-        if($smtp->code == 550 or $smtp->code == 551 or $smtp->code == 553) {
+        if($code == 550 or $code == 551 or $code == 553) {
             return _result(CU_UNKNOWN_USER, 'no such user');
+        } elsif($code == 552) {
+            return _result(CU_MAILBOX_FULL, 'mailbox full');
         } else {
-            return _result(CU_OK, 'unknown error in response');
             _pm_log "check_user_on_host: unknown error in response";
-            return 1;
+            return _result(CU_OK, 'unknown error in response');
         }
     }
 
@@ -370,6 +379,7 @@ sub _result($$) {
 
     $ok = 1 if $code == CU_OK;
     $ok = 1 if $code == CU_SMTP_UNREACHABLE;
+    $ok = 1 if $code == CU_MAILBOX_FULL and not $Treat_Full_As_Fail;
     $ok = 1 if $code == CU_DNS_TIMEOUT and not $Treat_Timeout_As_Fail;
     $ok = 1 if $code == CU_SMTP_TIMEOUT and not $Treat_Timeout_As_Fail;
 
@@ -472,6 +482,11 @@ global variable.  Use it carefully - if it is set to true then some
 valid email addresses can be treated as bad simply because an SMTP or
 DNS server responds slowly.
 
+Another warning is about C<$Mail::CheckUser::Treat_Full_As_Fail>
+global variable.  Use it carefully - if it is set to true then some
+valid email addresses can be treated as bad simply because their
+mailbox happens to be temporarily full.
+
 =head1 EXAMPLE
 
 This simple script checks if email address C<blabla@foo.bar> is
@@ -562,6 +577,10 @@ Timeout has happen during SMTP checks.
 All SMTP servers for mail domain were found unreachable during SMTP
 checks.
 
+=item CU_MAILBOX_FULL
+
+Mailbox is temporarily full but probably a valid username.
+
 =back
 
 =head1 GLOBAL VARIABLES
@@ -607,6 +626,12 @@ Timeout in seconds for network checks.  By default it is C<60>.
 
 If it is true C<Mail::CheckUser> treats checks that time out as
 failed.  By default it is false.
+
+=item $Mail::CheckUser::Treat_Full_As_Fail
+
+If it is true C<Mail::CheckUser> treats error "552 mailbox full"
+as an invalid email and sets CU_MAILBOX_FULL.
+By default it is false.
 
 =item $Mail::CheckUser::Net_DNS_Resolver
 

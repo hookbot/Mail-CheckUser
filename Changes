@@ -1,13 +1,24 @@
 Revision history for Perl module Mail::CheckUser
 
+1.18  Tue Dec 10 20:00:00 2002
+        - Latest version broke MAIL/RCPT check. Stupid, stupid, stupid
+          me - it actually caused failure of one test in test suite
+          but I misinterpreted it and though that mailboxes at
+          hotmail.com cannot be verified by Mail::CheckUser
+          anymore. Note to myself - never release anything in hurry.
+          Reported by Kevin Cassidy and fixed independently by Rob
+          Brown.
+        - Added $Treat_Full_As_Fail config variable and new check code
+          CU_MAILBOX_FULL to report full boxes (Rob Brown).
+
 1.17  Sat Nov 30 23:02:20 2002
-        - Be polite we SMTP servers and try to issue QUIT command
-          before disconnecting.
+        - Be polite with SMTP servers - try to issue QUIT command
+          before disconnecting. Suggested by Tom Allison.
         - Workaround Perl bug (#18784) which causes userpart regexp
           matching failures with correct userparts in Perl 5.8.0.
           Patch by Rodger Bagnall.
-        - Remove from documentation notice that MAIL/RCPT check
-          works with mailboxes on hotmail.com. It seems it is not
+        - Remove notice that MAIL/RCPT check works with mailboxes
+          on hotmail.com from documentation. It seems it is not
           true anymore.
 
 1.16  Wed Nov 18 09:30:00 2002
@@ -19,7 +30,7 @@ Revision history for Perl module Mail::CheckUser
         - Break RFC by allowing domains with "--"
 
 1.15  Fri Nov  8 00:02:23 2002
-        - Minor documentaion and code fixes.
+	- Minor documentaion and code fixes.
 
 1.14  Sat Oct 19 23:59:00 2002
 	- A little more robust for when some mail servers are down.
