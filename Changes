@@ -1,5 +1,9 @@
 Revision history for Perl extension Mail::CheckUser.
 
+0.11  Fri Jul 14 03:16:45 2000
+        - Added global variable $Mail::CheckUser::Treat_Timeout_As_Fail
+	- Updated documentation
+
 0.10  Sun Jul  9 04:50:59 2000
         - Added missed README file to distribution
 

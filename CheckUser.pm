@@ -14,14 +14,15 @@ require Exporter;
 	check_username
 );
 
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use Carp;
 use Net::DNS 0.12;
 use Net::SMTP 2.13;
 use IO::Handle 1.21;
 
-use vars qw($Skip_Network_Checks $Skip_SMTP_Checks $Timeout $Debug);
+use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
+            $Timeout $Treat_Timeout_As_Fail $Debug);
 
 # if it is true Mail::CheckUser doesn't make network checks
 $Skip_Network_Checks = 0;
@@ -30,6 +31,9 @@ $Skip_Network_Checks = 0;
 $Skip_SMTP_Checks = 0;
 # timeout in seconds for network checks
 $Timeout = 60;
+# if it is true Mail::CheckUser treats timeouted checks as failed
+# checks
+$Treat_Timeout_As_Fail = 0;
 # if true then enable debug mode
 $Debug = 0;
 
@@ -144,7 +148,7 @@ sub check_network($$) {
 	my $tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
 		_pm_log "check_network: timeout";
-		return 1;
+		return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
 	$resolver->tcp_timeout($tout);
 	my @mx = mx($resolver, $hostname);
@@ -152,7 +156,7 @@ sub check_network($$) {
 	$tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
 		_pm_log "check_network: timeout";
-		return 1;
+		return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
 	# secondly check result of query
 	if(@mx) {
@@ -169,7 +173,7 @@ sub check_network($$) {
 		my $tout = _calc_timeout($timeout, $start_time);
 		if($tout == 0) {
 			_pm_log "check_network: timeout";
-			return 1;
+			return $Treat_Timeout_As_Fail ? 0 : 1;
 		}
 		$resolver->tcp_timeout($tout);
 		my $res = $resolver->search($hostname);
@@ -177,7 +181,7 @@ sub check_network($$) {
 		$tout = _calc_timeout($timeout, $start_time);
 		if($tout == 0) {
 			_pm_log "check_network: timeout";
-			return 1;
+			return $Treat_Timeout_As_Fail ? 0 : 1;
 		}
 		# secondly check result of query
 		if($res) {
@@ -196,7 +200,7 @@ sub check_network($$) {
 			my $tout = _calc_timeout($timeout, $start_time);
 			if($tout == 0) {
 				_pm_log "check_network: timeout";
-				return 1;
+				return $Treat_Timeout_As_Fail ? 0 : 1;
 			}
 			my $res = check_user_on_host $mserver, $username, $tout;
 			
@@ -228,7 +232,7 @@ sub check_user_on_host($$$) {
 	my $tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
 		_pm_log "check_user_on_host: timeout";
-		return 1;
+		return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
 	my $smtp = Net::SMTP->new($hostname, Timeout => $tout);
 	unless(defined $smtp) {
@@ -240,7 +244,7 @@ sub check_user_on_host($$$) {
 	$tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
 		_pm_log "check_user_on_host: timeout";
-		return 1;
+		return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
 	$smtp->timeout($tout);
 	if($smtp->verify("$username\@$hostname")) {
@@ -250,7 +254,7 @@ sub check_user_on_host($$$) {
 		my $tout = _calc_timeout($timeout, $start_time);
 		if($tout == 0) {
 			_pm_log "check_user_on_host: timeout";
-			return 1;
+			return $Treat_Timeout_As_Fail ? 0 : 1;
 		} else {
 			if($smtp->status == 550 or $smtp->status == 551 or $smtp->status == 553) {
 				_pm_log "check_user_on_host: no such user \"$username\" on \"$hostname\"";
@@ -307,7 +311,7 @@ This Perl module provides routines for checking validness of email address.
 
 It makes several checks:
 
-=over 
+=over
 
 =item 1
 
@@ -327,6 +331,13 @@ with command VRFY if user is valid.
 
 If is possible to turn of all networking checks (second and third
 checks). See L<"GLOBAL VARIABLES">.
+
+This module was designed with CGIs (or any other dynamic Web content
+programmed with Perl) in mind. Usually it is required to check fastly
+e-mail address in form. If check can't be finished in reasonable time
+e-mail address should be treated as valid. This is default policy. By
+default if timeout happens result of check is treated as positive (it
+can overridden - see L<"GLOBAL VARIABLES">).
 
 =head1 EXAMPLE
 
@@ -353,23 +364,29 @@ I<check_email()>.
 =item *
 
 I<$Mail::CheckUser::Skip_Network_Checks> - if it is true then do only
-syntax checks. By default false.
+syntax checks. By default it is false.
 
 =item *
 
-I<$Mail::CheckUser::Skip_SMTP_Checks> - if it is true then do not
-try to connect to mail server to check if user exist on it. By
-default false.
+I<$Mail::CheckUser::Skip_SMTP_Checks> - if it is true then do not try
+to connect to mail server to check if user exist on it. By default it
+is false.
 
 =item *
 
 I<$Mail::CheckUser::Timeout> - timeout in seconds for network checks.
-By default 60.
+By default it is 60.
+
+=item *
+
+I<$Mail::CheckUser::Treat_Timeout_As_Fail> - if it is true
+Mail::CheckUser treats timeouted checks as failed checks. By default
+it is false.
 
 =item *
 
 I<$Mail::CheckUser::Debug> - if it is true then enable debug output on
-STDERR. By default false.
+STDERR. By default it is false.
 
 =back
 

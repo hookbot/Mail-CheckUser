@@ -12,6 +12,10 @@ there exist such host;
 3) it tries to connect to email server directly via SMTP to check with
 command VRFY if user is valid.
 
+This module was designed with CGIs in mind. It has support for check timeout
+so it can be used to filter faslty wrong e-mail adresses in CGI forms
+(passing as valid e-mail addresses that can't be checked fastly).
+
 For details see pod documentation in Mail::CheckUser
 
 REQUIREMENTS
