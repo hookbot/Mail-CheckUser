@@ -1,7 +1,8 @@
-package Mail::CheckUser;
 # Copyright (c) 1999-2001 by Ilya Martynov. All rights reserved.
 # This program is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
+
+package Mail::CheckUser;
 
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
@@ -15,12 +16,12 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '0.91';
+$VERSION = '0.92';
 
 use Carp;
 BEGIN {
     # this is a workaround againt anoying warning under Perl 5.6
-    local $^W;
+    local $^W = $^W;
     if($] > 5.00503) {
 	$^W = 0;
     }
@@ -32,7 +33,7 @@ use IO::Handle;
 
 use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
             $Timeout $Treat_Timeout_As_Fail $Debug
-            $Sender_Addr $Use_RCPT_Check $Helo_Domain);
+            $Sender_Addr $Helo_Domain);
 
 # if it is true Mail::CheckUser doesn't make network checks
 $Skip_Network_Checks = 0;
@@ -44,8 +45,6 @@ $Timeout = 60;
 # if it is true Mail::CheckUser treats timeouted checks as failed
 # checks
 $Treat_Timeout_As_Fail = 0;
-# if it is true use MAIL/RCPT check instead of VRFY
-$Use_RCPT_Check = 1;
 # sender addr used in MAIL/RCPT check
 $Sender_Addr = "check\@user.com";
 # sender domain used in HELO SMTP command - if undef lets
@@ -70,10 +69,6 @@ sub check_username_syntax($);
 sub check_network($$);
 # check_user_on_host MSERVER, USERNAME, HOSTNAME, TIMEOUT
 sub check_user_on_host($$$$);
-# check_user_on_host_with_VRFY MSERVER, USERNAME, HOSTNAME, TIMEOUT
-sub check_user_on_host_with_VRFY($$$$);
-# check_user_on_host_with_RCPT MSERVER, USERNAME, HOSTNAME, TIMEOUT
-sub check_user_on_host_with_RCPT($$$$);
 # _calc_timeout FULL_TIMEOUT START_TIME
 sub _calc_timeout($$);
 # _pm_log LOG_STR
@@ -122,7 +117,7 @@ sub check_hostname_syntax($) {
     _pm_log "check_hostname_syntax: checking \"$hostname\"";
 
     # check if hostname syntax is correct
-    # NOTE: it doesn't strictly follow RFC821
+    # NOTE: it doesn't strictly follow RFC822
     my $rAN = '[0-9a-zA-Z]';	# latin alphanum (don't use here \w: it can contain non-latin letters)
     my $rDM = "(?:$rAN+-)*$rAN+"; # domain regexp
     my $rHN = "(?:$rDM\\.)+$rDM"; # hostname regexp
@@ -197,7 +192,7 @@ sub check_network($$) {
 	    return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
 	$resolver->tcp_timeout($tout);
-	my $res = $resolver->search("$hostname.");
+	my $res = $resolver->search("$hostname.", 'A');
 	# firstly check if timeout happen
 	$tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
@@ -244,88 +239,31 @@ sub check_network($$) {
 sub check_user_on_host($$$$) {
     my($mserver, $username, $hostname, $timeout) = @_;
 
-    if($Use_RCPT_Check) {
-	return check_user_on_host_with_RCPT($mserver, $username, $hostname, $timeout);
-    } else {
-	return check_user_on_host_with_VRFY($mserver, $username, $hostname, $timeout);
-    }
-}
-
-# returns -1 if it is not possible to get information about user existence
-sub check_user_on_host_with_VRFY($$$$) {
-    my($mserver, $username, $hostname, $timeout) = @_;
-
-    _pm_log "check_user_on_host_with_VRFY: checking user \"$username\" on \"$mserver\"";
+    _pm_log "check_user_on_host: checking user \"$username\" on \"$mserver\"";
 
     my $start_time = time;
+
+    # disable warnings because Net::SMTP can generate some on timeout
+    # conditions
+    local $^W = 0;
 
     # try to connect to mail server
     my $tout = _calc_timeout($timeout, $start_time);
     if($tout == 0) {
-	_pm_log "check_user_on_host_with_VRFY: timeout";
+	_pm_log "check_user_on_host: timeout";
 	return $Treat_Timeout_As_Fail ? 0 : 1;
     }
     my @hello_params = defined $Helo_Domain ? (Hello => $Helo_Domain) : ();
     my $smtp = Net::SMTP->new($mserver, Timeout => $tout, @hello_params);
     unless(defined $smtp) {
-	_pm_log "check_user_on_host_with_VRFY: unable to connect to \"$mserver\"";
-	return -1;
-    }
-
-    # try to check if user is valid with VRFY command
-    $tout = _calc_timeout($timeout, $start_time);
-    if($tout == 0) {
-	_pm_log "check_user_on_host_with_VRFY: timeout";
-	return $Treat_Timeout_As_Fail ? 0 : 1;
-    }
-    $smtp->timeout($tout);
-    if($smtp->verify("$username\@$hostname")) {
-	return 1;
-    } else {
-	# check if verify returned error because of timeout
-	my $tout = _calc_timeout($timeout, $start_time);
-	if($tout == 0) {
-	    _pm_log "check_user_on_host_with_VRFY: timeout";
-	    return $Treat_Timeout_As_Fail ? 0 : 1;
-	} else {
-	    if($smtp->code == 550 or $smtp->code == 551 or $smtp->code == 553) {
-		_pm_log "check_user_on_host_with_VRFY: no such user \"$username\" on \"$mserver\"";
-		return 0;
-	    } else {
-		_pm_log "check_user_on_host_with_VRFY: unknown error in response";
-		return 1;
-	    }
-	}
-    }
-
-    _pm_log "check_user_on_host_with_VRFY: exiting successfully";
-    return 1;
-}
-
-# returns -1 if it is not possible to get information about user existence
-sub check_user_on_host_with_RCPT($$$$) {
-    my($mserver, $username, $hostname, $timeout) = @_;
-
-    _pm_log "check_user_on_host_with_RCPT: checking user \"$username\" on \"$mserver\"";
-
-    my $start_time = time;
-
-    # try to connect to mail server
-    my $tout = _calc_timeout($timeout, $start_time);
-    if($tout == 0) {
-	_pm_log "check_user_on_host_with_RCPT: timeout";
-	return $Treat_Timeout_As_Fail ? 0 : 1;
-    }
-    my $smtp = Net::SMTP->new($mserver, Timeout => $tout);
-    unless(defined $smtp) {
-	_pm_log "check_user_on_host_with_RCPT: unable to connect to \"$mserver\"";
+	_pm_log "check_user_on_host: unable to connect to \"$mserver\"";
 	return -1;
     }
 
     # try to check if user is valid with MAIL/RCPT commands
     $tout = _calc_timeout($timeout, $start_time);
     if($tout == 0) {
-	_pm_log "check_user_on_host_with_RCPT: timeout";
+	_pm_log "check_user_on_host: timeout";
 	return $Treat_Timeout_As_Fail ? 0 : 1;
     }
     $smtp->timeout($tout);
@@ -335,10 +273,10 @@ sub check_user_on_host_with_RCPT($$$$) {
 
 	# check for timeout
 	if($tout == 0) {
-	    _pm_log "check_user_on_host_with_RCPT: timeout";
+	    _pm_log "check_user_on_host: timeout";
 	    return $Treat_Timeout_As_Fail ? 0 : 1;
 	} else {
-	    _pm_log "check_user_on_host_with_RCPT: can't say MAIL - " . $smtp->message;
+	    _pm_log "check_user_on_host: can't say MAIL - " . $smtp->message;
 	    return 1;
 	}
     }
@@ -348,27 +286,32 @@ sub check_user_on_host_with_RCPT($$$$) {
 	# check if verify returned error because of timeout
 	my $tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
-	    _pm_log "check_user_on_host_with_RCPT: timeout";
+	    _pm_log "check_user_on_host: timeout";
 	    return $Treat_Timeout_As_Fail ? 0 : 1;
 	} else {
 	    if($smtp->code == 550 or $smtp->code == 551 or $smtp->code == 553) {
-		_pm_log "check_user_on_host_with_RCPT: no such user \"$username\" on \"$mserver\"";
+		_pm_log "check_user_on_host: no such user \"$username\" on \"$mserver\"";
 		return 0;
 	    } else {
-		_pm_log "check_user_on_host_with_RCPT: unknown error in response";
+		_pm_log "check_user_on_host: unknown error in response";
 		return 1;
 	    }
 	}
     }
 
-    _pm_log "check_user_on_host_with_RCPT: exiting successfully";
+    _pm_log "check_user_on_host: exiting successfully";
     return 1;
 }
 
 sub _calc_timeout($$) {
     my($full_timeout, $start_time) = @_;
 
-    my $timeout = $full_timeout - (time - $start_time);
+    my $now_time = time;
+    my $passed_time = $now_time - $start_time;
+    _pm_log "_calc_timeout: start - $start_time, now - $now_time";
+    _pm_log "_calc_timeout: timeout - $full_timeout, passed - $passed_time";
+
+    my $timeout = $full_timeout - $passed_time;
 
     if($timeout < 0) {
 	return 0;
@@ -414,8 +357,8 @@ it checks syntax of email address;
 
 =item 2
 
-it checks if there any MX record for specified in email domain
-or if there exist such host;
+it checks if there any MX record or at least A record for domain
+in email address;
 
 =item 3
 
@@ -423,11 +366,8 @@ it tries to connect to email server directly via SMTP to check if
 mailbox is valid. Old versions of this module have performed this
 check via VRFY command. Now module uses another check: it uses
 combination of commands MAIL and RCPT which simulates fake sending of
-email. Old VRFY check is still supported (see
-I<$Mail::CheckUser::Use_RCPT_Check> global variable description in
-L<"GLOBAL VARIABLES">). However please note VRFY can't detect bad
-mailboxes in many cases while MAIL/RCPT works. For example hotmail.com
-can be verified with MAIL/RCPT check while VRFY check doesn't work.
+email. It can detect bas mailboxes in many cases. For example
+hotmail.com mailboxes can be verified with MAIL/RCPT check.
 
 =back
 
@@ -491,11 +431,6 @@ syntax checks. By default it is false.
 I<$Mail::CheckUser::Skip_SMTP_Checks> - if it is true then do not try
 to connect to mail server to check if user exist on it. By default it
 is false.
-
-=item *
-
-I<$Mail::CheckUser::Use_RCPT_Check> - if it is true then use MAIL/RCPT
-check instead VRFY check. By default it is true.
 
 =item *
 

@@ -1,5 +1,18 @@
 Revision history for Perl module Mail::CheckUser
 
+0.92  Fri Mar  9 15:11:34 2001
+	- Minor fix: don't get records of type 'IN' in hostname checks
+	  via DNS.
+	- Value $Mail::CheckUser::Helo_Domain option variable wasn't
+	  respected if SMTP server is verified with combination of
+	  MAIL and RCPT commands.
+	- Added disabling warnings that comes from Net::SMTP in
+	  timeout conditions.
+	- Incompatible chage: Removed old VRFY check. Probably nobody
+	  even notice it.
+	- No longer puting rfcs into distro
+	- Some minor pod doc fixes
+
 0.91  Fri Jan 12 19:06:29 2001
 	- Added section IMPORTANT WARNINGS to pod documentation. I'm
 	  really tired to answer same questions :) Hope this will help

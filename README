@@ -6,16 +6,15 @@ It makes several checks:
 
 1) it checks syntax of email address;
 
-2) it checks if there any MX record for specified in email domain or if
-there exist such host;
+2) it checks if there any MX record or at least A record for domain
+in email address;
 
-3) it tries to connect to email server directly via SMTP to check if mailbox
-is valid. Old versions of this module have performed this check via VRFY
-command. Now module uses another check: it uses combination of commands MAIL
-and RCPT which simulates fake sending of email. Old VRFY is still supported.
-However please note VRFY can't detect bad mailboxes in many cases while
-MAIL/RCPT works. For example hotmail.com can be verified with MAIL/RCPT
-check while VRFY check doesn't work.
+3) it tries to connect to email server directly via SMTP to check if
+mailbox is valid. Old versions of this module have performed this
+check via VRFY command. Now module uses another check: it uses
+combination of commands MAIL and RCPT which simulates fake sending of
+email. It can detect bas mailboxes in many cases. For example
+hotmail.com mailboxes can be verified with MAIL/RCPT check.
 
 This module was designed with CGIs in mind. It has support for check
 timeout so it can be used to filter fast wrong e-mail adresses in CGI
