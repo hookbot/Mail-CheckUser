@@ -14,7 +14,7 @@ require Exporter;
 	check_username
 );
 
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 use Carp;
 use Net::DNS 0.12;
@@ -320,7 +320,7 @@ or if there exist such host;
 
 =item 3
 
-it tryes to connect to email server directly via SMTP to check
+it tries to connect to email server directly via SMTP to check
 with command VRFY if user is valid.
 
 =back

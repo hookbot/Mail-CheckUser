@@ -1,5 +1,8 @@
 Revision history for Perl extension Mail::CheckUser.
 
+0.10  Sun Jul  9 04:50:59 2000
+        - Added missed README file to distribution
+
 0.09  Sun Jul  9 02:51:36 2000
         - Documentation fixes
 	- More CPAN compatible Makefile.PL
