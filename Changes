@@ -1,5 +1,9 @@
 Revision history for Perl module Mail::CheckUser
 
+0.15  Tue Aug 29 15:40:28 2000
+	- Added some notes about third email address validness check into
+	  README and pod documentation
+
 0.14  Sat Aug 26 21:10:08 2000
 	- Added more tests for emails address syntax
 	- Fix for bug with verifing user on SMTP servers that support

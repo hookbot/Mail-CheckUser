@@ -14,7 +14,7 @@ require Exporter;
 	check_username
 );
 
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use Carp;
 use Net::DNS 0.12;
@@ -51,7 +51,7 @@ sub check_hostname_syntax($);
 sub check_username_syntax($);
 # check_network HOSTNAME, USERNAME
 sub check_network($$);
-# check_user_on_host HOSTNAME, USERNAME, TIMEOUT
+# check_user_on_host MSERVER, USERNAME, HOSTNAME, TIMEOUT
 sub check_user_on_host($$$$);
 # _calc_timeout FULL_TIMEOUT START_TIME
 sub _calc_timeout($$);
@@ -324,8 +324,10 @@ or if there exist such host;
 
 =item 3
 
-it tries to connect to email server directly via SMTP to check
-with command VRFY if user is valid.
+it tries to connect to email server directly via SMTP to check with command
+VRFY if user is valid. However please note that many SMTP servers always
+report success for VRFY requests. So often this check will be passed for bad
+email addresses.
 
 =back
 
