@@ -1,10 +1,15 @@
 Revision history for Perl module Mail::CheckUser
 
+0.14  Sat Aug 26 21:10:08 2000
+	- Added more tests for emails address syntax
+	- Fix for bug with verifing user on SMTP servers that support
+	  multiple domains (thanks to Karen R Sabog)
+
 0.13  Mon Aug 14 19:20:16 2000
 	- Added into distro rfc821
 	- Changes in regexp which handles emails syntax (it doesn't allow
 	  space in username anymore)
-	- Added more tests for emails syntax
+	- Added more tests for emails address syntax
 
 0.12  Wed Jul 19 20:33:29 2000
 	- Fixed bug in SMTP return codes handling (thanks to Rolf Beutner)

@@ -14,7 +14,7 @@ require Exporter;
 	check_username
 );
 
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use Carp;
 use Net::DNS 0.12;
@@ -52,7 +52,7 @@ sub check_username_syntax($);
 # check_network HOSTNAME, USERNAME
 sub check_network($$);
 # check_user_on_host HOSTNAME, USERNAME, TIMEOUT
-sub check_user_on_host($$$);
+sub check_user_on_host($$$$);
 # _calc_timeout FULL_TIMEOUT START_TIME
 sub _calc_timeout($$);
 # _pm_log LOG_STR
@@ -202,7 +202,7 @@ sub check_network($$) {
 				_pm_log "check_network: timeout";
 				return $Treat_Timeout_As_Fail ? 0 : 1;
 			}
-			my $res = check_user_on_host $mserver, $username, $tout;
+			my $res = check_user_on_host $mserver, $username, $hostname, $tout;
 			
 			if($res == 1) {
 			        _pm_log "check_network: treat \"$username\" as valid user on \"$mserver\"";
@@ -221,10 +221,10 @@ sub check_network($$) {
 }
 
 # returns -1 if it is not possible to get information about user existence
-sub check_user_on_host($$$) {
-	my($hostname, $username, $timeout) = @_;
+sub check_user_on_host($$$$) {
+	my($mserver, $username, $hostname, $timeout) = @_;
 	
-	_pm_log "check_user_on_host: checking user \"$username\" on \"$hostname\"";
+	_pm_log "check_user_on_host: checking user \"$username\" on \"$mserver\"";
 	
 	my $start_time = time;
 	
@@ -234,9 +234,9 @@ sub check_user_on_host($$$) {
 		_pm_log "check_user_on_host: timeout";
 		return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
-	my $smtp = Net::SMTP->new($hostname, Timeout => $tout);
+	my $smtp = Net::SMTP->new($mserver, Timeout => $tout);
 	unless(defined $smtp) {
-		_pm_log "check_user_on_host: unable to connect to \"$hostname\"";
+		_pm_log "check_user_on_host: unable to connect to \"$mserver\"";
 		return -1;
 	}
 	
@@ -257,7 +257,7 @@ sub check_user_on_host($$$) {
 			return $Treat_Timeout_As_Fail ? 0 : 1;
 		} else {
 			if($smtp->code == 550 or $smtp->code == 551 or $smtp->code == 553) {
-				_pm_log "check_user_on_host: no such user \"$username\" on \"$hostname\"";
+				_pm_log "check_user_on_host: no such user \"$username\" on \"$mserver\"";
 				return 0;
 			} else {
 				_pm_log "check_user_on_host: unknown error in response";
