@@ -14,7 +14,7 @@ require Exporter;
 	check_username
 );
 
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use Carp;
 use Net::DNS 0.12;
@@ -121,7 +121,7 @@ sub check_username_syntax($) {
 
 	# check if username syntax is correct
 	# NOTE: it doesn't strictly follow RFC821
-	my $rST = '[^<>\(\)\[\]\\\.,;:@"' . $_SECOND_ASCII . ']'; # allowed string regexp
+	my $rST = '[^ <>\(\)\[\]\\\.,;:@"' . $_SECOND_ASCII . ']'; # allowed string regexp
 	my $rUN = "(?:$rST+\\.)*$rST+"; # username regexp
 	if($username !~ /^$rUN$/o) {
 		_pm_log "check_username_syntax: syntax check failed for username \"$username\"";
@@ -220,7 +220,7 @@ sub check_network($$) {
 	return 1;
 }
 
-# returns -1 if it is impossible to know if user exists;
+# returns -1 if it is not possible to get information about user existence
 sub check_user_on_host($$$) {
 	my($hostname, $username, $timeout) = @_;
 	
@@ -333,11 +333,11 @@ If is possible to turn of all networking checks (second and third
 checks). See L<"GLOBAL VARIABLES">.
 
 This module was designed with CGIs (or any other dynamic Web content
-programmed with Perl) in mind. Usually it is required to check fastly
-e-mail address in form. If check can't be finished in reasonable time
-e-mail address should be treated as valid. This is default policy. By
-default if timeout happens result of check is treated as positive (it
-can overridden - see L<"GLOBAL VARIABLES">).
+programmed with Perl) in mind. Usually it is required to check fastly e-mail
+address in form. If check can't be finished in reasonable time e-mail
+address should be treated as valid. This is default policy. By default if
+timeout happens result of check is treated as positive (it can be overridden
+- see L<"GLOBAL VARIABLES">).
 
 =head1 EXAMPLE
 

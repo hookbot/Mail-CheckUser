@@ -3,6 +3,8 @@ CheckUser.pm
 MANIFEST
 Makefile.PL
 README
+TODO
+docs/rfc821.txt
 t/check.pl
 t/dns.t
 t/smtp.t
