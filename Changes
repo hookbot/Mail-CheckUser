@@ -1,0 +1,41 @@
+Revision history for Perl extension Mail::CheckUser.
+
+0.09  Sun Jul  9 02:51:36 2000
+        - Documentation fixes
+	- More CPAN compatible Makefile.PL
+	- First release on CPAN
+
+0.08  Sat Jul  8 20:46:49 2000
+        - More debug logging added
+        - Added requirement for IO::Handle 1.21: earlier version has
+       	  problems with timeout handling
+
+0.07  Wed Apr  5 17:32:41 2000
+	- Documentation fixes: there was mentioned check_mail instead
+	  check_email
+
+0.06  Tue Nov 16 03:51:03 1999
+	- Fixed bug with handling DNS request timeouts
+
+0.05  Mon Nov 15 19:29:15 1999
+	- test.pl was split into four tests scripts and they
+	  were moved to 't' directory
+
+0.04  Sat Nov 13 16:03:01 1999
+	- documentation for Mail::CheckUser expanded a bit
+	- some syntax fixes in Mail::CheckUser documentation 
+
+0.03  Fri Nov 12 22:02:43 1999
+	- documentation fixes for Mail::CheckUser
+
+0.02  Fri Nov 12 21:56:59 1999
+	- added global variable $Mail::CheckUser::Skip_SMTP_Checks
+	  which enables/disables connection to mail server to check
+	  if user exists on it
+
+0.01  Tue Nov  2 04:34:00 1999
+	- first working version
+
+0.01  Fri Oct 29 17:37:27 1999
+	- original version; created by h2xs 1.18
+
