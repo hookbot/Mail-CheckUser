@@ -1,6 +1,6 @@
 SHORT DESCRIPTION
 
-This Perl module provides routines for checking validness of email address.
+This Perl module provides routines for checking validity of email address.
 
 It makes several checks:
 

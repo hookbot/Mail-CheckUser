@@ -1,5 +1,17 @@
 Revision history for Perl module Mail::CheckUser
 
+1.00  Wed Jun 27 19:03:20 2001
+	- Added more tests for email address syntax check.
+	- Fixed spelling (with ispell) it this file :).
+	- Replaced 'validness' with 'validity' in docs. I'm sorry -
+	  English isn't my native language. Thanks to Dudley Cadet for
+	  this correction.
+	- This is 'offical' stable release. Now I'm already working on
+	  new rewritten version of this module which will have some
+	  new features: OO API, access to DNS resolver object (so it
+	  will be possible to set DNS servers for hostname resolving)
+	  and many others useful things.
+
 0.92  Fri Mar  9 15:11:34 2001
 	- Minor fix: don't get records of type 'IN' in hostname checks
 	  via DNS.
@@ -8,10 +20,10 @@ Revision history for Perl module Mail::CheckUser
 	  MAIL and RCPT commands.
 	- Added disabling warnings that comes from Net::SMTP in
 	  timeout conditions.
-	- Incompatible chage: Removed old VRFY check. Probably nobody
+	- Incompatible change: Removed old VRFY check. Probably nobody
 	  even notice it.
-	- No longer puting rfcs into distro
-	- Some minor pod doc fixes
+	- No longer putting rfcs into distro.
+	- Some minor pod doc fixes.
 
 0.91  Fri Jan 12 19:06:29 2001
 	- Added section IMPORTANT WARNINGS to pod documentation. I'm
@@ -20,9 +32,9 @@ Revision history for Perl module Mail::CheckUser
 	  to specify domain name used in HELO query. It can help if
 	  SMTP servers doesn't like default domain used in HELO query
 	- Added LICENSE section to README and similar info to CheckUser.pm
-	- Changed resolver behaviour: now all domain names are checked in
+	- Changed resolver behavior: now all domain names are checked in
 	  root zone. It means thats email addresses like someone@foo.bar
-	  will not be accepted as valid anymore just becouse your local
+	  will not be accepted as valid anymore just because your local
 	  computer resolves domain foo.bar.mydomain.com and have 'search
 	  mydomain.com' in his /etc/resolv.conf.
 
@@ -30,7 +42,7 @@ Revision history for Perl module Mail::CheckUser
 	- Removed some tests because some my test mailboxes have became
 	  invalid
 	- Some minor pod doc fixes
-	- Marking this release as 0.90 since I belive it has reached stable
+	- Marking this release as 0.90 since I believe it has reached stable
 	  state now
 
 0.17  Mon Sep 25 21:06:06 2000
@@ -40,14 +52,14 @@ Revision history for Perl module Mail::CheckUser
 0.16  Mon Sep 11 22:44:11 2000
 	- Add another check: now module can verify user on SMTP servers
 	  using combination of MAIL and RCPT commands. This check can detect
-	  validness of mailboxes on more SMTP servers then VRFY check. By
+	  validity of mailboxes on more SMTP servers then VRFY check. By
 	  default module now uses this new check. Old VRFY is still
 	  supported but can be possibly removed in future because it seems
 	  there is no need in it if we have MAIL/RCPT check (thanks for idea
 	  to Marc Jauvin)
 
 0.15  Tue Aug 29 15:40:28 2000
-	- Added some notes about third email address validness check into
+	- Added some notes about third email address validity check into
 	  README and pod documentation
 
 0.14  Sat Aug 26 21:10:08 2000

@@ -16,7 +16,7 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '0.92';
+$VERSION = '1.00';
 
 use Carp;
 BEGIN {
@@ -333,7 +333,7 @@ __END__
 
 =head1 NAME
 
-Mail::CheckUser - checking email addresses for validness
+Mail::CheckUser - checking email addresses for validity
 
 =head1 SYNOPSIS
 
@@ -345,7 +345,7 @@ Mail::CheckUser - checking email addresses for validness
 
 =head1 DESCRIPTION
 
-This Perl module provides routines for checking validness of email address.
+This Perl module provides routines for checking validity of email address.
 
 It makes several checks:
 
@@ -383,7 +383,7 @@ can be overridden - see L<"GLOBAL VARIABLES">).
 
 =head1 IMPORTANT WARNING
 
-In many cases there is no way to detect validness of email address
+In many cases there is no way to detect validity of email address
 with network checks. For example Postfix SMTP mail server (at least
 with default settings) always tells that user exists even if it is not
 so. Such behavior is common to many SMTP servers designed with
