@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2002 by Ilya Martynov. All rights
+# Copyright (c) 1999-2003 by Ilya Martynov. All rights
 # reserved.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_MAILBOX_FULL)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 use Carp;
 use Net::DNS;
@@ -219,6 +219,20 @@ sub check_network($$) {
             # Just check user on each mail server one at a time.
             foreach my $mserver (@mservers) {
                 my $tout = _calc_timeout($timeout, $start_time);
+                if ($mserver !~ /^\d+\.\d+\.\d+\.\d+$/) {
+                    # Resolve it to an IP
+                    return _result(CU_DNS_TIMEOUT, 'DNS timeout') if $tout == 0;
+                    $resolver->udp_timeout($tout);
+                    if (my $ans = $resolver->query($mserver)) {
+                        foreach my $rr_a ($ans->answer) {
+                            if ($rr_a->type eq "A") {
+                                $mserver = $rr_a->address;
+                                last;
+                            }
+                        }
+                    }
+                    $tout = _calc_timeout($timeout, $start_time);
+                }
                 return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
 
                 my $res = check_user_on_host $mserver, $username, $hostname, $tout;
@@ -229,19 +243,45 @@ sub check_network($$) {
         } else {
             # Determine which mail servers are on
             my $resolve = {};
+            my $tout = _calc_timeout($timeout, $start_time);
+            foreach my $mserver (@mservers) {
+                # All mservers need to be resolved to IPs before the SYN check
+                if ($mserver =~ /^\d+\.\d+\.\d+\.\d+$/) {
+                    $resolve->{$mserver} = 1;
+                } else {
+                    _pm_log "check_network: \"$mserver\" resolving";
+                    return _result(CU_DNS_TIMEOUT, 'DNS timeout') if $tout == 0;
+                    $resolver->udp_timeout($tout);
+                    if (my $ans = $resolver->query($mserver)) {
+                        foreach my $rr_a ($ans->answer) {
+                            if ($rr_a->type eq "A") {
+                                $mserver = $rr_a->address;
+                                $resolve->{$mserver} = 1;
+                                _pm_log "check_network: resolved to IP \"$mserver\"";
+                                last;
+                            }
+                        }
+                    } else {
+                        _pm_log "check_network: \"$mserver\" host not found!";
+                    }
+                    $tout = _calc_timeout($timeout, $start_time);
+                }
+            }
+
             require Net::Ping;
             import Net::Ping 2.24;
             # Use only three-fourths of the full timeout for lookups
             # in order to leave time to actually speak to the server.
-            my $ping = new Net::Ping "syn", _calc_timeout($timeout, $start_time)*3/4+1;
+            my $ping = Net::Ping->new("syn", _calc_timeout($timeout, $start_time) * 3 / 4 + 1);
             $ping->{port_num} = getservbyname("smtp", "tcp");
             $ping->tcp_service_check(1);
             foreach my $mserver (@mservers) {
-                _pm_log "check_network: \"$mserver\" resolving";
-                my ($resolved,$lookup_duration,$ip) = $ping->ping($mserver);
-                if ($resolved) {
-                    $resolve->{$mserver} = $ip;
-                    _pm_log "check_network: \"$mserver\" SYN packet sent to \"$ip\"";
+                _pm_log "check_network: \"$mserver\" sending SYN...";
+                # untaint before passing to Net::Ping
+                my ($tainted) = $mserver =~ /(\d+\.\d+\.\d+\.\d+)/;
+                if ($tainted and $tainted eq $mserver and
+                    $resolve->{$tainted} and $ping->ping($tainted)) {
+                    _pm_log "check_network: \"$tainted\" SYN packet sent.";
                 } else {
                     _pm_log "check_network: \"$mserver\" host not found!";
                 }
@@ -251,11 +291,13 @@ sub check_network($$) {
                 return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
 
                 _pm_log "check_network: \"$mserver\" waiting for ACK";
-                if (my $ip = $resolve->{$mserver}) {
+                if ($resolve->{$mserver}) {
+                    # untaint before passing to Net::Ping
+                    my($mserver) = $mserver =~ /(\d+\.\d+\.\d+\.\d+)/;
                     if ($ping->ack($mserver)) {
-                        _pm_log "check_network: \"$mserver\" ACK received from \"$ip\"";
+                        _pm_log "check_network: \"$mserver\" ACK received.";
                         # check user on this mail server
-                        my $res = check_user_on_host $ip, $username, $hostname, $tout;
+                        my $res = check_user_on_host $mserver, $username, $hostname, $tout;
 
                         return 1 if $res == 1;
                         return 0 if $res == 0;
@@ -653,9 +695,11 @@ false.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Ilya Martynov B<ilya@martynov.org>
+
+Rob Brown B<bbb@cpan.org>
 
 Module maintained at Source Forge (
 http://sourceforge.net/projects/mail-checkuser/
@@ -663,15 +707,16 @@ http://sourceforge.net/projects/mail-checkuser/
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2002 by Ilya Martynov.  All rights
+Copyright (c) 1999-2003 by Ilya Martynov.  All rights
 reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+$Id: CheckUser.pm,v 1.41 2003/08/29 18:11:31 hookbot Exp $
 
 =head1 SEE ALSO
 
 perl(1).
 
 =cut
-

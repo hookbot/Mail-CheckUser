@@ -1,39 +1,47 @@
 Revision history for Perl module Mail::CheckUser
 
+1.20  Mon Sep 01 12:00:00 2003
+	- Run the forward lookups of MX records through the
+	  Net::DNS resolver object to detect slow lookups
+	  within the timeout restricted.  The normal
+	  gethostbyname did not honor the timeout.
+	- Taint cleaner.
+	- Add procmail filter example.
+
 1.19  Sat Mar 08 12:00:00 2003
-        - Correct syntax for Net::Ping::ping and nack.
-        - Avoids a problem when the MX entry does not resolve.
-        - Prevent this crash: "Usage> nack($failed_ack_host)"
-        - Bug reported by peter@hiplists.com (Peter Beltemacchi)
+	- Correct syntax for Net::Ping::ping and nack.
+	- Avoids a problem when the MX entry does not resolve.
+	- Prevent this crash: "Usage> nack($failed_ack_host)"
+	- Bug reported by peter@hiplists.com (Peter Beltemacchi)
 
 1.18  Tue Dec 10 20:00:00 2002
-        - Latest version broke MAIL/RCPT check. Stupid, stupid, stupid
-          me - it actually caused failure of one test in test suite
-          but I misinterpreted it and though that mailboxes at
-          hotmail.com cannot be verified by Mail::CheckUser
-          anymore. Note to myself - never release anything in hurry.
-          Reported by Kevin Cassidy and fixed independently by Rob
-          Brown.
-        - Added $Treat_Full_As_Fail config variable and new check code
-          CU_MAILBOX_FULL to report full boxes (Rob Brown).
+	- Latest version broke MAIL/RCPT check. Stupid, stupid, stupid
+	  me - it actually caused failure of one test in test suite
+	  but I misinterpreted it and though that mailboxes at
+	  hotmail.com cannot be verified by Mail::CheckUser
+	  anymore. Note to myself - never release anything in hurry.
+	  Reported by Kevin Cassidy and fixed independently by Rob
+	  Brown.
+	- Added $Treat_Full_As_Fail config variable and new check code
+	  CU_MAILBOX_FULL to report full boxes (Rob Brown).
 
 1.17  Sat Nov 30 23:02:20 2002
-        - Be polite with SMTP servers - try to issue QUIT command
-          before disconnecting. Suggested by Tom Allison.
-        - Workaround Perl bug (#18784) which causes userpart regexp
-          matching failures with correct userparts in Perl 5.8.0.
-          Patch by Rodger Bagnall.
-        - Remove notice that MAIL/RCPT check works with mailboxes
-          on hotmail.com from documentation. It seems it is not
-          true anymore.
+	- Be polite with SMTP servers - try to issue QUIT command
+	  before disconnecting. Suggested by Tom Allison.
+	- Workaround Perl bug (#18784) which causes userpart regexp
+	  matching failures with correct userparts in Perl 5.8.0.
+	  Patch by Rodger Bagnall.
+	- Remove notice that MAIL/RCPT check works with mailboxes
+	  on hotmail.com from documentation. It seems it is not
+	  true anymore.
 
 1.16  Wed Nov 18 09:30:00 2002
-        - Add $Mail::CheckUser::Net_DNS_Resolver feature
-          to allow customizeable Net::DNS::Resolver object.
-        - Utilize udp_timeout feature in Net::DNS
-          to avoid excessive dns delays (Rob Brown).
-        - Do not allow "special" characters in username.
-        - Break RFC by allowing domains with "--"
+	- Add $Mail::CheckUser::Net_DNS_Resolver feature
+	  to allow customizeable Net::DNS::Resolver object.
+	- Utilize udp_timeout feature in Net::DNS
+	  to avoid excessive dns delays (Rob Brown).
+	- Do not allow "special" characters in username.
+	- Break RFC by allowing domains with "--"
 
 1.15  Fri Nov  8 00:02:23 2002
 	- Minor documentaion and code fixes.
@@ -52,7 +60,7 @@ Revision history for Perl module Mail::CheckUser
 	- Fix die if all SMTP servers for mail domain are found as
 	  unreachable during SMTP checks. Thanks to Michal
 	  Weinfurtner for bug report.
-        - Added additional status code CU_SMTP_UNREACHABLE which is
+	- Added additional status code CU_SMTP_UNREACHABLE which is
 	  set if all SMTP servers for mail domain are found as
 	  unreachable during SMTP checks.
 
@@ -158,20 +166,20 @@ Revision history for Perl module Mail::CheckUser
 	- Fixed bug in SMTP return codes handling (thanks to Rolf Beutner).
 
 0.11  Fri Jul 14 03:16:45 2000
-        - Added global variable $Mail::CheckUser::Treat_Timeout_As_Fail.
+	- Added global variable $Mail::CheckUser::Treat_Timeout_As_Fail.
 	- Updated documentation.
 
 0.10  Sun Jul  9 04:50:59 2000
-        - Added missed README file to distribution.
+	- Added missed README file to distribution.
 
 0.09  Sun Jul  9 02:51:36 2000
-        - Documentation fixes.
+	- Documentation fixes.
 	- Makefile.PL have better compatibility with CPAN.
 	- First release on CPAN.
 
 0.08  Sat Jul  8 20:46:49 2000
-        - Added more verbose debug logging.
-        - Added requirement for IO::Handle 1.21: earlier version has
+	- Added more verbose debug logging.
+	- Added requirement for IO::Handle 1.21: earlier version has
        	  problems with timeouts handling.
 
 0.07  Wed Apr  5 17:32:41 2000

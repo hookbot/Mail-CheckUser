@@ -9,4 +9,5 @@ WriteMakefile
     'Net::DNS'   => 0.31,
     'IO::Handle' => 1.21,
   },
+  EXE_FILES => ['procmail/cufilter'],
   ;

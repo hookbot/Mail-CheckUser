@@ -4,8 +4,11 @@ MANIFEST
 Makefile.PL
 README
 TODO
+procmail/cufilter
+procmail/.procmailrc
 t/check.pl
 t/dns.t
 t/smtp.t
+t/smtp-taint.t
 t/syntax.t
 t/timeout.t
