@@ -6,7 +6,6 @@ require 't/check.pl';
 $Mail::CheckUser::Skip_Network_Checks = 0;
 $Mail::CheckUser::Skip_SMTP_Checks = 0;
 $Mail::CheckUser::Timeout = 120;
-$Mail::CheckUser::Use_RCPT_Check = 1;
 
 @ok_emails = qw(m_ilya@agava.com);
 @bad_emails = qw(unknown@for.bar fhjfewovborvtrb@hotmail.com);

@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000,2001,2002 by Ilya Martynov. All rights
+# Copyright (c) 1999-2002 by Ilya Martynov. All rights
 # reserved.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -7,13 +7,12 @@
 package Mail::CheckUser;
 
 use strict;
-use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
+use vars qw(@ISA @EXPORT_OK %EXPORT_TAGS $VERSION);
 
 require Exporter;
 
 @ISA = qw(Exporter);
 
-@EXPORT = qw();
 @EXPORT_OK = qw(check_email
                 last_check
 	        check_hostname
@@ -27,22 +26,14 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_SMTP_UNREACHABLE)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.13';
+$VERSION = '1.15';
 
 use Carp;
-BEGIN {
-    # workaround against annoying warning under Perl 5.6+
-    local $^W = $^W;
-    if($] > 5.00503) {
-	$^W = 0;
-    }
-    require Net::DNS;
-    import Net::DNS;
-}
+use Net::DNS;
 use Net::SMTP;
 use IO::Handle;
 
-use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
+use vars qw($Skip_Network_Checks $Skip_SMTP_Checks $Skip_SYN
             $Timeout $Treat_Timeout_As_Fail $Debug
             $Sender_Addr $Helo_Domain $Last_Check);
 
@@ -53,6 +44,8 @@ $Skip_Network_Checks = 0;
 $Skip_SMTP_Checks = 0;
 # timeout in seconds for network checks
 $Timeout = 60;
+# if it is true the Net::Ping SYN/ACK check will be skipped
+$Skip_SYN = 0;
 # if it is true Mail::CheckUser treats timeouted checks as failed
 # checks
 $Treat_Timeout_As_Fail = 0;
@@ -142,7 +135,7 @@ sub check_hostname_syntax($) {
     my $rDM = "(?:$rAN+-)*$rAN+"; # domain regexp
     my $rHN = "(?:$rDM\\.)+$rDM"; # hostname regexp
     if($hostname =~ /^$rHN$/o) {
-	return _result(CU_OK, 'correct hostname syntax')
+	return _result(CU_OK, 'correct hostname syntax');
     } else {
 	return _result(CU_BAD_SYNTAX, 'bad hostname syntax');
     }
@@ -158,7 +151,7 @@ sub check_username_syntax($) {
     my $rST = '[^ <>\(\)\[\]\\\.,;:@"' . $_SECOND_ASCII . ']'; # allowed string regexp
     my $rUN = "(?:$rST+\\.)*$rST+"; # username regexp
     if($username =~ /^$rUN$/o) {
-	return _result(CU_OK, 'correct username syntax')
+	return _result(CU_OK, 'correct username syntax');
     } else {
 	return _result(CU_BAD_SYNTAX, 'bad username syntax');
     }
@@ -209,27 +202,66 @@ sub check_network($$) {
 	if($res) {
 	    @mservers = ($hostname);
 	} else {
-	    return _result(CU_UNKNOWN_DOMAIN, 'DNS failure: ' . $resolver->errorstring)
+	    return _result(CU_UNKNOWN_DOMAIN, 'DNS failure: ' . $resolver->errorstring);
 	}
     }
 
     if($Skip_SMTP_Checks) {
 	return _result(CU_OK, 'skipping SMTP checks');
     } else {
-	# check user on mail servers
-	foreach my $mserver (@mservers) {
-	    my $tout = _calc_timeout($timeout, $start_time);
-	    return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
+        if ($Skip_SYN) {
+            # Skip SYN/ACK check.
+            # Just check user on each mail server one at a time.
+            foreach my $mserver (@mservers) {
+                my $tout = _calc_timeout($timeout, $start_time);
+                return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
 
-	    my $res = check_user_on_host $mserver, $username, $hostname, $tout;
+                my $res = check_user_on_host $mserver, $username, $hostname, $tout;
 
-	    return 1 if $res == 1;
-	    return 0 if $res == 0;
-	}
+                return 1 if $res == 1;
+                return 0 if $res == 0;
+            }
+        } else {
+            # Determine which mail servers are on
+            my $resolve = {};
+            require Net::Ping;
+            import Net::Ping 2.24;
+            # Use only three-fourths of the full timeout for lookups
+            # in order to leave time to actually speak to the server.
+            my $ping = new Net::Ping "syn", _calc_timeout($timeout, $start_time)*3/4+1;
+            $ping->{port_num} = getservbyname("smtp", "tcp");
+            $ping->tcp_service_check;
+            foreach my $mserver (@mservers) {
+                _pm_log "check_network: \"$mserver\" resolving";
+                if (my ($resolved,$lookup_duration,$ip) = $ping->ping($mserver)) {
+                    $resolve->{$mserver} = $ip;
+                    _pm_log "check_network: \"$mserver\" SYN packet sent to \"$ip\"";
+                } else {
+                    _pm_log "check_network: \"$mserver\" host not found!";
+                }
+            }
+            foreach my $mserver (@mservers) {
+                my $tout = _calc_timeout($timeout, $start_time);
+                return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
 
-	return _result(CU_SMTP_UNREACHABLE,
-		       'Cannot connect SMTP servers: ' .
-		      join(', ', @mservers));
+                _pm_log "check_network: \"$mserver\" waiting for ACK";
+                if (my $ip = $resolve->{$mserver} and $ping->ack($mserver)) {
+                    _pm_log "check_network: \"$mserver\" ACK received from \"$ip\"";
+                    # check user on this mail server
+                    my $res = check_user_on_host $ip, $username, $hostname, $tout;
+
+                    return 1 if $res == 1;
+                    return 0 if $res == 0;
+                } else {
+                    _pm_log "check_network: \"$mserver\" no ACK received: [".
+                        ($ping->nack($mserver) || "no SYN sent")."]";
+                }
+            }
+        }
+
+        return _result(CU_SMTP_UNREACHABLE,
+                       'Cannot connect SMTP servers: ' .
+                       join(', ', @mservers));
     }
 
     # it should be impossible to reach this statement
@@ -541,6 +573,12 @@ user exists.  If this is true, and
 C<$Mail::CheckUser::Skip_Network_Checks> is false, only syntax and DNS
 checks are performed.  By default it is false.
 
+=item $Mail::CheckUser::Skip_SYN
+
+If it is true module uses L<Net::Ping|Net::Ping> to determine remote
+reachability of SMTP servers before doing SMTP checks.  By default it
+is true.
+
 =item $Mail::CheckUser::Sender_Addr
 
 MAIL/RCPT check needs an email address to use as the 'From' address
@@ -572,9 +610,13 @@ false.
 
 Ilya Martynov B<ilya@martynov.org>
 
+Module maintained at Source Forge (
+http://sourceforge.net/projects/mail-checkuser/
+).
+
 =head1 COPYRIGHT
 
-Copyright (c) 1999,2000,2001,2002 by Ilya Martynov.  All rights
+Copyright (c) 1999-2002 by Ilya Martynov.  All rights
 reserved.
 
 This program is free software; you can redistribute it and/or modify

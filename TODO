@@ -4,9 +4,9 @@
 
 3) OO interface
 
-4) More correct syntax checking (better comformance to RFCs) (?)
+4) More correct syntax checking (better comformance to RFC 822)
 
-5) Allow to users on 'perl Makefile.PM' specify test mailboxes that will be
-tested on 'make test' (?) 
+5) Allow users to specify on 'perl Makefile.PL' test mailboxes that will be
+tested on 'make test' (?)
 
 6) Allow specify DNS servers with which dns checks should be done.

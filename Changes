@@ -1,5 +1,15 @@
 Revision history for Perl module Mail::CheckUser
 
+1.15  Fri Nov  8 00:02:23 2002
+        - Minor documentaion and code fixes.
+
+1.14  Sat Oct 19 23:59:00 2002
+	- A little more robust for when some mail servers are down.
+	- Uses Net::Ping to determine remote reachability.
+	- Added setting $Mail::CheckUser::Skip_SYN
+	  to retain the old 1.13 functionality.
+	- Patches by bbb@cpan.org (Rob Brown)
+
 1.13  Sat Mar  9 23:59:00 2002
 	- I had to bump version because of corrupted CPAN upload.
 
@@ -63,11 +73,11 @@ Revision history for Perl module Mail::CheckUser
 
 0.91  Fri Jan 12 19:06:29 2001
 	- Added section IMPORTANT WARNINGS to pod documentation. I'm
-	  really tired to answer same questions :) Hope this will help
+	  really tired to answer same questions :) Hope this will help.
 	- Added $Mail::CheckUser::Helo_Domain parameter. This allows
 	  to specify domain name used in HELO query. It can help if
-	  SMTP servers doesn't like default domain used in HELO query
-	- Added LICENSE section to README and similar info to CheckUser.pm
+	  SMTP servers doesn't like default domain used in HELO query.
+	- Added LICENSE section to README and similar info to CheckUser.pm.
 	- Changed resolver behavior: now all domain names are checked in
 	  root zone. It means thats email addresses like someone@foo.bar
 	  will not be accepted as valid anymore just because your local
@@ -76,14 +86,14 @@ Revision history for Perl module Mail::CheckUser
 
 0.90  Thu Nov 16 16:31:10 2000
 	- Removed some tests because some my test mailboxes have became
-	  invalid
-	- Some minor pod doc fixes
+	  invalid.
+	- Some minor pod doc fixes.
 	- Marking this release as 0.90 since I believe it has reached stable
-	  state now
+	  state now.
 
 0.17  Mon Sep 25 21:06:06 2000
 	- Added workaround against annoying warning under Perl 5.6 in
-	  Net::DNS module which is used by this module
+	  Net::DNS module which is used by this module.
 
 0.16  Mon Sep 11 22:44:11 2000
 	- Add another check: now module can verify user on SMTP servers
@@ -92,66 +102,66 @@ Revision history for Perl module Mail::CheckUser
 	  default module now uses this new check. Old VRFY is still
 	  supported but can be possibly removed in future because it seems
 	  there is no need in it if we have MAIL/RCPT check (thanks for idea
-	  to Marc Jauvin)
+	  to Marc Jauvin).
 
 0.15  Tue Aug 29 15:40:28 2000
 	- Added some notes about third email address validity check into
-	  README and pod documentation
+	  README and pod documentation.
 
 0.14  Sat Aug 26 21:10:08 2000
-	- Added more tests for emails address syntax
+	- Added more tests for emails address syntax.
 	- Fix for bug with verifying user on SMTP servers that support
-	  multiple domains (thanks to Karen R Sabog)
+	  multiple domains (thanks to Karen R Sabog).
 
 0.13  Mon Aug 14 19:20:16 2000
-	- Added into distro rfc821
+	- Added into distro rfc 821.
 	- Changes in regexp which handles emails syntax (it doesn't allow
-	  space in username anymore)
-	- Added more tests for emails address syntax
+	  space in username anymore).
+	- Added more tests for emails address syntax.
 
 0.12  Wed Jul 19 20:33:29 2000
-	- Fixed bug in SMTP return codes handling (thanks to Rolf Beutner)
+	- Fixed bug in SMTP return codes handling (thanks to Rolf Beutner).
 
 0.11  Fri Jul 14 03:16:45 2000
-        - Added global variable $Mail::CheckUser::Treat_Timeout_As_Fail
-	- Updated documentation
+        - Added global variable $Mail::CheckUser::Treat_Timeout_As_Fail.
+	- Updated documentation.
 
 0.10  Sun Jul  9 04:50:59 2000
-        - Added missed README file to distribution
+        - Added missed README file to distribution.
 
 0.09  Sun Jul  9 02:51:36 2000
-        - Documentation fixes
-	- More CPAN compatible Makefile.PL
-	- First release on CPAN
+        - Documentation fixes.
+	- Makefile.PL have better compatibility with CPAN.
+	- First release on CPAN.
 
 0.08  Sat Jul  8 20:46:49 2000
-        - More debug logging added
+        - Added more verbose debug logging.
         - Added requirement for IO::Handle 1.21: earlier version has
-       	  problems with timeout handling
+       	  problems with timeouts handling.
 
 0.07  Wed Apr  5 17:32:41 2000
 	- Documentation fixes: there was mentioned check_mail instead
-	  check_email
+	  check_email.
 
 0.06  Tue Nov 16 03:51:03 1999
-	- Fixed bug with handling DNS request timeouts
+	- Fixed bug with handling DNS request timeouts.
 
 0.05  Mon Nov 15 19:29:15 1999
-	- test.pl was split into four tests scripts and they
-	  were moved to 't' directory
+	- Script test.pl was split into four tests scripts and they
+	  were moved to 't' directory.
 
 0.04  Sat Nov 13 16:03:01 1999
-	- documentation for Mail::CheckUser expanded a bit
-	- some syntax fixes in Mail::CheckUser documentation 
+	- Documentation for Mail::CheckUser expanded a bit.
+	- Some syntax fixes in Mail::CheckUser documentation.
 
 0.03  Fri Nov 12 22:02:43 1999
-	- documentation fixes for Mail::CheckUser
+	- Documentation fixes for Mail::CheckUser.
 
 0.02  Fri Nov 12 21:56:59 1999
-	- added global variable $Mail::CheckUser::Skip_SMTP_Checks
+	- Added global variable $Mail::CheckUser::Skip_SMTP_Checks
 	  which enables/disables connection to mail server to check
-	  if user exists on it
+	  if user exists on it.
 
 0.01  Tue Nov  2 04:34:00 1999
-	- first working version
+	- First working version.
 

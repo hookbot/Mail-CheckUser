@@ -13,7 +13,7 @@ It makes several checks:
 3) it tries to connect to an email server directly via SMTP to check
    if mailbox is valid. Old versions of this module performed this
    check via the VRFY command.  Now the module uses another check; it
-   uses a combina- tion of MAIL and RCPT commands which simulates
+   uses a combination of MAIL and RCPT commands which simulates
    sending an email. It can detect bad mailboxes in many cases. For
    example, hotmail.com mailboxes can be verified with the MAIL/RCPT
    check.
@@ -29,9 +29,10 @@ REQUIREMENTS
 
 This module requires next Perl modules:
 
-1) Net::SMTP (libnet package)
-2) Net::DNS  (Net-DNS package)
+1) Net::SMTP  (libnet package)
+2) Net::DNS   (Net-DNS package)
 3) IO::Handle (IO package)
+4) Net::Ping  (Net-Ping package)
 
 Perl distributions before 5.6 contain version of IO::Handle which has
 bugs in timeouts handling. Download latest version from CPAN if you
