@@ -27,7 +27,7 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_MAILBOX_FULL)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 use Carp;
 use Net::DNS;
@@ -235,10 +235,11 @@ sub check_network($$) {
             # in order to leave time to actually speak to the server.
             my $ping = new Net::Ping "syn", _calc_timeout($timeout, $start_time)*3/4+1;
             $ping->{port_num} = getservbyname("smtp", "tcp");
-            $ping->tcp_service_check;
+            $ping->tcp_service_check(1);
             foreach my $mserver (@mservers) {
                 _pm_log "check_network: \"$mserver\" resolving";
-                if (my ($resolved,$lookup_duration,$ip) = $ping->ping($mserver)) {
+                my ($resolved,$lookup_duration,$ip) = $ping->ping($mserver);
+                if ($resolved) {
                     $resolve->{$mserver} = $ip;
                     _pm_log "check_network: \"$mserver\" SYN packet sent to \"$ip\"";
                 } else {
@@ -250,16 +251,20 @@ sub check_network($$) {
                 return _result(CU_SMTP_TIMEOUT, 'SMTP timeout') if $tout == 0;
 
                 _pm_log "check_network: \"$mserver\" waiting for ACK";
-                if (my $ip = $resolve->{$mserver} and $ping->ack($mserver)) {
-                    _pm_log "check_network: \"$mserver\" ACK received from \"$ip\"";
-                    # check user on this mail server
-                    my $res = check_user_on_host $ip, $username, $hostname, $tout;
+                if (my $ip = $resolve->{$mserver}) {
+                    if ($ping->ack($mserver)) {
+                        _pm_log "check_network: \"$mserver\" ACK received from \"$ip\"";
+                        # check user on this mail server
+                        my $res = check_user_on_host $ip, $username, $hostname, $tout;
 
-                    return 1 if $res == 1;
-                    return 0 if $res == 0;
+                        return 1 if $res == 1;
+                        return 0 if $res == 0;
+                    } else {
+                        _pm_log "check_network: \"$mserver\" no ACK received: [".
+                            ($ping->nack($mserver) || "no SYN sent")."]";
+                    }
                 } else {
-                    _pm_log "check_network: \"$mserver\" no ACK received: [".
-                        ($ping->nack($mserver) || "no SYN sent")."]";
+                    _pm_log "check_network: skipping check_user_on_host \"$mserver\" since it did not resolve";
                 }
             }
         }

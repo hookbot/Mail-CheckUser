@@ -1,5 +1,11 @@
 Revision history for Perl module Mail::CheckUser
 
+1.19  Sat Mar 08 12:00:00 2003
+        - Correct syntax for Net::Ping::ping and nack.
+        - Avoids a problem when the MX entry does not resolve.
+        - Prevent this crash: "Usage> nack($failed_ack_host)"
+        - Bug reported by peter@hiplists.com (Peter Beltemacchi)
+
 1.18  Tue Dec 10 20:00:00 2002
         - Latest version broke MAIL/RCPT check. Stupid, stupid, stupid
           me - it actually caused failure of one test in test suite
