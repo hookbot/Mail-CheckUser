@@ -1,4 +1,7 @@
 package Mail::CheckUser;
+# Copyright (c) 1999-2001 by Ilya Martynov. All rights reserved.
+# This program is free software; you can redistribute it and/or modify it
+# under the same terms as Perl itself.
 
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS $VERSION);
@@ -12,7 +15,7 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '0.90';
+$VERSION = '0.91';
 
 use Carp;
 BEGIN {
@@ -29,7 +32,7 @@ use IO::Handle;
 
 use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
             $Timeout $Treat_Timeout_As_Fail $Debug
-            $Sender_Addr $Use_RCPT_Check);
+            $Sender_Addr $Use_RCPT_Check $Helo_Domain);
 
 # if it is true Mail::CheckUser doesn't make network checks
 $Skip_Network_Checks = 0;
@@ -45,6 +48,9 @@ $Treat_Timeout_As_Fail = 0;
 $Use_RCPT_Check = 1;
 # sender addr used in MAIL/RCPT check
 $Sender_Addr = "check\@user.com";
+# sender domain used in HELO SMTP command - if undef lets
+# Net::SMTP use its default value
+$Helo_Domain = undef;
 # if true then enable debug mode
 $Debug = 0;
 
@@ -166,7 +172,7 @@ sub check_network($$) {
 	return $Treat_Timeout_As_Fail ? 0 : 1;
     }
     $resolver->tcp_timeout($tout);
-    my @mx = mx($resolver, $hostname);
+    my @mx = mx($resolver, "$hostname.");
     # firstly check if timeout happen
     $tout = _calc_timeout($timeout, $start_time);
     if($tout == 0) {
@@ -191,7 +197,7 @@ sub check_network($$) {
 	    return $Treat_Timeout_As_Fail ? 0 : 1;
 	}
 	$resolver->tcp_timeout($tout);
-	my $res = $resolver->search($hostname);
+	my $res = $resolver->search("$hostname.");
 	# firstly check if timeout happen
 	$tout = _calc_timeout($timeout, $start_time);
 	if($tout == 0) {
@@ -259,7 +265,8 @@ sub check_user_on_host_with_VRFY($$$$) {
 	_pm_log "check_user_on_host_with_VRFY: timeout";
 	return $Treat_Timeout_As_Fail ? 0 : 1;
     }
-    my $smtp = Net::SMTP->new($mserver, Timeout => $tout);
+    my @hello_params = defined $Helo_Domain ? (Hello => $Helo_Domain) : ();
+    my $smtp = Net::SMTP->new($mserver, Timeout => $tout, @hello_params);
     unless(defined $smtp) {
 	_pm_log "check_user_on_host_with_VRFY: unable to connect to \"$mserver\"";
 	return -1;
@@ -399,7 +406,7 @@ This Perl module provides routines for checking validness of email address.
 
 It makes several checks:
 
-=over
+=over 4
 
 =item 1
 
@@ -434,6 +441,24 @@ e-mail address should be treated as valid. This is default policy. By
 default if timeout happens result of check is treated as positive (it
 can be overridden - see L<"GLOBAL VARIABLES">).
 
+=head1 IMPORTANT WARNING
+
+In many cases there is no way to detect validness of email address
+with network checks. For example Postfix SMTP mail server (at least
+with default settings) always tells that user exists even if it is not
+so. Such behavior is common to many SMTP servers designed with
+security in mind since it is believed that lying about users existence
+helps to fight against spam. Does it mean that network checks in this
+module are useless? I think no since majority of SMTP servers do tell
+truth. Use this to filter email addresses. It was designed in such way
+that if there is exists possibility (even small) that email address is
+valid it will be treated as valid by this module.
+
+Another warning is about I<$Mail::CheckUser::Treat_Timeout_As_Fail>
+global variable. Use it carefully - if it set in true than some valid
+email addresses can be treated as bad simply SMTP server responds
+slowly.
+
 =head1 EXAMPLE
 
 This simple script checks if email address B<blabla@foo.bar> is
@@ -454,7 +479,7 @@ valid.
 It is possible to configure I<check_email()> using global variables listed
 below.
 
-=over
+=over 4
 
 =item *
 
@@ -476,6 +501,12 @@ check instead VRFY check. By default it is true.
 
 I<$Mail::CheckUser::Sender_Addr> - MAIL/RCPT check needs some mailbox
 name to perform its check. Default value is "check\@user.com"
+
+=item *
+
+I<$Mail::CheckUser::Helo_Domain> - sender domain used in HELO SMTP
+command - if undef lets Net::SMTP use its default value. By default is
+is undef.
 
 =item *
 

@@ -45,6 +45,14 @@ make install
 
 Tests can run very slowly especially if you have network down.
 
+LICENSE
+
+Mail::CheckUser is provided "as is" and without any express or implied
+warranties, including, without limitation, the implied warranties of
+merchantibility and fitness for a particular purpose.  Mail::CheckUser is
+released under the same terms as Perl itself.  For more information see the
+"README" or "Artistic" files provided with the Perl distribution.
+
 BUGS
 
 If you have encountered any problems with this module fill free to contact
