@@ -27,7 +27,7 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_MAILBOX_FULL)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.20';
+$VERSION = '1.21';
 
 use Carp;
 use Net::DNS;
@@ -36,6 +36,7 @@ use IO::Handle;
 
 use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
             $Skip_SYN $Net_DNS_Resolver
+            $NXDOMAIN
             $Timeout $Treat_Timeout_As_Fail $Debug
             $Treat_Full_As_Fail
             $Sender_Addr $Helo_Domain $Last_Check);
@@ -64,6 +65,68 @@ $Helo_Domain = undef;
 $Net_DNS_Resolver = undef;
 # if true then enable debug mode
 $Debug = 0;
+# Wildcard gTLD always denote bogus domains
+# (http://www.imperialviolet.org/dnsfix.html)
+## gTLD Wildcard IPs
+$NXDOMAIN = {
+  # com/net
+  "64.94.110.11"     => 1, # A
+
+  # ac
+  "194.205.62.122"   => 1, # A
+
+  # cc
+  "206.253.214.102"  => 1, # A
+  "snubby.enic.cc"   => 1, # MX
+  "206.191.159.103"  => 1, # MX
+
+  # cx
+  "219.88.106.80"    => 1, # A
+  "mail.nonregistered.nic.cx" => 1, # MX
+
+  # mp
+  "202.128.12.163"   => 1, # A
+
+  # museum
+  "195.7.77.20"      => 1, # A
+
+  # nu
+  "64.55.105.9"      => 1, # A
+  "212.181.91.6"     => 1, # A
+
+  # ph
+  "203.119.4.6"      => 1, # A
+
+  # pw
+  "216.98.141.250"   => 1, # A
+  "65.125.231.178"   => 1, # A
+  "wfb.dnsvr.com"    => 1, # CNAME
+
+  # sh
+  "194.205.62.62"    => 1, # A
+
+  # td
+  "146.101.245.154"  => 1, # A
+  "www.nic.td"       => 1, # CNAME
+
+  # tk
+  "195.20.32.83"     => 1, # A
+  "195.20.32.86"     => 1, # A
+  "nukumatau.taloha.com" => 1, # MX
+  "195.20.32.99"     => 1, # MX
+
+  # tm
+  "194.205.62.42"    => 1, # A
+
+  # tw
+  "203.73.24.11"     => 1, # A
+
+  # ws
+  "216.35.187.246"   => 1, # A
+  "mail.worldsite.ws" => 1, # MX
+  "216.35.187.251"   => 1, # MX
+
+};
 
 # check_email EMAIL
 sub check_email( $ );
@@ -206,9 +269,28 @@ sub check_network($$) {
         # check result of query
         if($res) {
             @mservers = ($hostname);
+            my $ip;
+            foreach my $rr ($res->answer) {
+              if ($rr->type eq "A") {
+                $ip = $rr->address;
+                last;
+              } elsif ($rr->type eq "CNAME") {
+                $ip = $rr->cname;
+              } else {
+                # Should never happen!
+                $ip = "";
+              }
+            }
+            _pm_log "check_network: \"$ip\" Wildcard gTLD check";
+            return _result(CU_UNKNOWN_DOMAIN, 'Wildcard gTLD') if $NXDOMAIN->{lc $ip};
         } else {
             return _result(CU_UNKNOWN_DOMAIN, 'DNS failure: ' . $resolver->errorstring);
         }
+    }
+
+    foreach my $mserver (@mservers) {
+        _pm_log "check_network: \"$mserver\" Wildcard gTLD check";
+        return _result(CU_UNKNOWN_DOMAIN, 'Wildcard gTLD') if $NXDOMAIN->{lc $mserver};
     }
 
     if($Skip_SMTP_Checks) {
@@ -713,7 +795,7 @@ reserved.
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
-$Id: CheckUser.pm,v 1.41 2003/08/29 18:11:31 hookbot Exp $
+$Id: CheckUser.pm,v 1.46 2003/09/18 23:51:36 hookbot Exp $
 
 =head1 SEE ALSO
 

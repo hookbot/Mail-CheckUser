@@ -1,5 +1,12 @@
 Revision history for Perl module Mail::CheckUser
 
+1.21  Thu Sep 18 12:00:00 2003
+	- Fix cufilter to handle bounce messages better.
+	- Avoid cufilter redundant checking.
+	- Handle special wildcard gTLD bogus domains.
+	  (See http://www.imperialviolet.org/dnsfix.html)
+	- Patches by Rob Brown
+
 1.20  Mon Sep 01 12:00:00 2003
 	- Run the forward lookups of MX records through the
 	  Net::DNS resolver object to detect slow lookups

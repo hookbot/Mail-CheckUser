@@ -12,3 +12,4 @@ t/smtp.t
 t/smtp-taint.t
 t/syntax.t
 t/timeout.t
+t/wildcard.t

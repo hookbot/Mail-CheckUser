@@ -22,7 +22,9 @@ the email address in the "From:" header is passed through
 Mail::CheckUser to ensure validity.  If there is a problem
 with the email address, the "Subject:" header is modified
 to show which email address failed along with the failure
-reason.
+reason.  No messages are lost, but it provides an easy way
+for the mail client to organize, sort, or filter based on
+the subject tweaks.
 
 =head1 EXAMPLES
 
@@ -63,7 +65,7 @@ All rights reserved.
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
-$Id: cufilter,v 1.1 2003/09/01 16:12:48 hookbot Exp $
+$Id: cufilter,v 1.3 2003/09/18 15:36:26 hookbot Exp $
 
 =head1 SEE ALSO
 
@@ -80,24 +82,24 @@ $Mail::CheckUser::Timeout = 300;
 $Mail::CheckUser::Treat_Timeout_As_Fail = 1;
 $Mail::CheckUser::Treat_Full_As_Fail = 1;
 
-$VERSION = "0.02";
+$VERSION = "0.03";
 my $HEAD = "";
-my @checks = ();
+my %checks = ();
 while (<STDIN>) {
   if (/^[\r\n]+$/) {
     $HEAD .= "Subject: (no subject)\r\n" unless $HEAD =~ /^Subject:/im;
-    if (@checks) {
-      foreach my $check (@checks) {
-        if ($check->[1]) {
+    if (keys %checks) {
+      foreach my $check (keys %checks) {
+        if ($checks{$check}->[0]) {
           # Bad email
-          $HEAD =~ s/^(Subject:)/$1 [CU!$check->[0]!$check->[2]]/im;
+          $HEAD =~ s/^(Subject:)/$1 [CU!$check!$checks{$check}->[1]]/im;
         }
       }
     } else {
       $HEAD =~ s/^(Subject:)/$1 [CU!no sender address found!]/im;
     }
     print $HEAD;
-    print "X-CU-Filter: $Mail::CheckUser::VERSION/$VERSION - Checked ".(scalar @checks)." addresses\r\n";
+    print "X-CU-Filter: $Mail::CheckUser::VERSION/$VERSION - Checked ".(scalar keys %checks)." addresses\r\n";
     print "\r\n";
     while (<STDIN>) {
       print;
@@ -107,14 +109,19 @@ while (<STDIN>) {
   $HEAD .= $_;
   if (/^\S*(return-path|from|sender)\S*[: ]+(.+)/i) {
     my $email = $2;
-    $email = $1 if $email =~ /\<(\S+)\>/;
+    $email = $1 if $email =~ /\<(\S*)\>/;
     1 while $email =~ s/\([^()]\)//;
     1 while $email =~ s/"[^\"]"//;
     $email =~ s/(@\S+)\s.*/$1/;
     $email =~ s/.*\s(\S+@)/$1/;
-    check_email($email);
-    my $l = last_check;
-    push @checks, [$email, $l->{code}, $l->{reason}];
+    if ($email =~ /@/) {
+      $email =~ y/A-Z/a-z/;
+      $checks{$email} ||= do {
+        check_email($email);
+        my $l = last_check;
+        [$l->{code}, $l->{reason}];
+      };
+    }
   } elsif (/^[\w\-]+:.*/ || /^[ \t]/) {
     # Looks like a valid header
   } else {
