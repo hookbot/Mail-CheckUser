@@ -2,4 +2,7 @@
 
 2) OO interface
 
-3) More correct syntax checking (better comformance to RFCs)? 
+3) More correct syntax checking (better comformance to RFCs) (?)
+
+4) Allow to users on 'perl Makefile.PM' specify test mailboxes that will be
+tested on 'make test' (?) 

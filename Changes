@@ -1,5 +1,12 @@
 Revision history for Perl module Mail::CheckUser
 
+0.90  Thu Nov 16 16:31:10 2000
+	- Removed some tests because some my test mailboxs have became
+	  invalid
+	- Some minor pod doc fixes
+	- Marking this release as 0.90 since I belive it has reached stable
+	  state now
+
 0.17  Mon Sep 25 21:06:06 2000
 	- Added workaround against annoying warning under Perl 5.6 in
 	  Net::DNS module which is used by this module

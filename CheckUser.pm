@@ -12,7 +12,7 @@ require Exporter;
 	        check_hostname
 	        check_username);
 
-$VERSION = '0.17';
+$VERSION = '0.90';
 
 use Carp;
 BEGIN {
@@ -451,8 +451,8 @@ valid.
 
 =head1 GLOBAL VARIABLES
 
-Using global variables listed below it is possible to configure
-I<check_email()>.
+It is possible to configure I<check_email()> using global variables listed
+below.
 
 =over
 
