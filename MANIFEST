@@ -7,6 +7,7 @@ TODO
 docs/rfc821.txt
 t/check.pl
 t/dns.t
+t/smtp-old.t
 t/smtp.t
 t/syntax.t
 t/timeout.t

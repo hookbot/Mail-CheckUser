@@ -1,5 +1,14 @@
 Revision history for Perl module Mail::CheckUser
 
+0.16  Mon Sep 11 22:44:11 2000
+	- Add another check: now module can verify user on SMTP servers
+	  using combination of MAIL and RCPT commands. This check can detect
+	  validness of mailboxes on more SMTP servers then VRFY check. By
+	  default module now uses this new check. Old VRFY is still
+	  supported but can be possibly removed in future becouse it seems
+	  there is no need in it if we have MAIL/RCPT check (thanks for idea
+	  to Marc Jauvin)
+
 0.15  Tue Aug 29 15:40:28 2000
 	- Added some notes about third email address validness check into
 	  README and pod documentation

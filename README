@@ -9,14 +9,18 @@ It makes several checks:
 2) it checks if there any MX record for specified in email domain or if
 there exist such host;
 
-3) it tries to connect to email server directly via SMTP to check with
-command VRFY if user is valid. However please note that many SMTP servers
-always report success for VRFY requests. So often this check will be passed
-for bad email addresses.
+3) it tries to connect to email server directly via SMTP to check if mailbox
+is valid. Old versions of this module have performed this check via VRFY
+command. Now module uses another check: it uses combination of commands MAIL
+and RCPT which simulates fake sending of email. Old VRFY is still supported.
+However please note VRFY can't detect bad mailboxes in many cases while
+MAIL/RCPT works. For example hotmail.com can be verified with MAIL/RCPT
+check while VRFY check doesn't work.
 
-This module was designed with CGIs in mind. It has support for check timeout
-so it can be used to filter fastly wrong e-mail adresses in CGI forms
-(passing as valid e-mail addresses that can't be checked fastly).
+This module was designed with CGIs in mind. It has support for check
+timeout so it can be used to filter fast wrong e-mail adresses in CGI
+forms (passing as valid e-mail addresses that can't be checked
+fastly).
 
 For details see pod documentation in Mail::CheckUser
 

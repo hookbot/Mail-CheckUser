@@ -1,1 +1,5 @@
-Do not allow mail server's on private networks like 192.168.*.*
+1) Do not allow mail server's on private networks like 192.168.*.*
+
+2) Add checking mailboxes on SMTP server with MAIL/RCPT commands
+
+3) OO interface
