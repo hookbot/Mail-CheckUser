@@ -1,4 +1,5 @@
-use Mail::CheckUser qw(check_email);
+use Test;
+use Mail::CheckUser qw(:constants check_email last_check);
 
 require 't/check.pl';
 
@@ -12,7 +13,7 @@ push @bad_emails, 'qqqqqqqqq wwwwwwww@test.com';
 push @bad_emails, 'Ваш e-mail OlegNick@nursat.kz';
 push @bad_emails, 'РусскийТекст@nursat.kz';
 
-start(scalar(@ok_emails) + scalar(@bad_emails));
+start(scalar(@ok_emails) + scalar(@bad_emails) + 8);
 
 foreach my $email (@ok_emails) {
         run_test($email, 0);
@@ -21,3 +22,13 @@ foreach my $email (@ok_emails) {
 foreach my $email (@bad_emails) {
         run_test($email, 1);
 }
+
+run_test('test@aaa.com', 0);
+ok(last_check()->{code} == CU_OK);
+ok(last_check()->{ok});
+ok(defined last_check()->{reason});
+
+run_test('testaaa.com', 1);
+ok(last_check()->{code} == CU_BAD_SYNTAX);
+ok(not last_check()->{ok});
+ok(defined last_check()->{reason});

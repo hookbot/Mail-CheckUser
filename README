@@ -1,25 +1,27 @@
 SHORT DESCRIPTION
 
-This Perl module provides routines for checking validity of email address.
+This Perl module provides routines for checking validity of email
+address.
 
 It makes several checks:
 
-1) it checks syntax of email address;
+1) it checks the syntax of an email address;
 
-2) it checks if there any MX record or at least A record for domain
-in email address;
+2) it checks if there any MX records or A records for the
+   domain part of the email address;
 
-3) it tries to connect to email server directly via SMTP to check if
-mailbox is valid. Old versions of this module have performed this
-check via VRFY command. Now module uses another check: it uses
-combination of commands MAIL and RCPT which simulates fake sending of
-email. It can detect bas mailboxes in many cases. For example
-hotmail.com mailboxes can be verified with MAIL/RCPT check.
+3) it tries to connect to an email server directly via SMTP to check
+   if mailbox is valid. Old versions of this module performed this
+   check via the VRFY command.  Now the module uses another check; it
+   uses a combina- tion of MAIL and RCPT commands which simulates
+   sending an email. It can detect bad mailboxes in many cases. For
+   example, hotmail.com mailboxes can be verified with the MAIL/RCPT
+   check.
 
-This module was designed with CGIs in mind. It has support for check
-timeout so it can be used to filter fast wrong e-mail adresses in CGI
-forms (passing as valid e-mail addresses that can't be checked
-fastly).
+This module was designed with CGIs (or any other dynamic Web content
+programmed with Perl) in mind. Usually it is required to quickly check
+e-mail addresses in forms. If the check can't be finished in
+reasonable time, the e-mail address should be treated as valid.
 
 For details see pod documentation in Mail::CheckUser
 
@@ -31,9 +33,9 @@ This module requires next Perl modules:
 2) Net::DNS  (Net-DNS package)
 3) IO::Handle (IO package)
 
-Perl distributions before 5.6 contain version of IO::Handle which has bugs
-in timeouts handling. Download latest version from CPAN if you haven't did
-it before.
+Perl distributions before 5.6 contain version of IO::Handle which has
+bugs in timeouts handling. Download latest version from CPAN if you
+haven't done it before.
 
 INSTALLATION
 
@@ -42,19 +44,18 @@ make
 make test
 make install
 
-Tests can run very slowly especially if you have network down.
+Tests may run very slow especially if networking is down.
 
 LICENSE
 
 Mail::CheckUser is provided "as is" and without any express or implied
 warranties, including, without limitation, the implied warranties of
-merchantibility and fitness for a particular purpose.  Mail::CheckUser is
-released under the same terms as Perl itself.  For more information see the
-"README" or "Artistic" files provided with the Perl distribution.
+merchantibility and fitness for a particular purpose. Mail::CheckUser
+is released under the same terms as Perl itself. For more information
+see the "README" or "Artistic" files provided with the Perl
+distribution.
 
 BUGS
 
-If you have encountered any problems with this module fill free to contact
-me.
-
-My email: Ilya Martynov <m_ilya@agava.com>
+If you have encountered any problems with this module fill free to
+contact author (Ilya Martynov <ilya@martynov.org>).

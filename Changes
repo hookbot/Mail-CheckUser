@@ -1,5 +1,33 @@
 Revision history for Perl module Mail::CheckUser
 
+1.13  Sat Mar  9 23:59:00 2002
+	- I had to bump version because of corrupted CPAN upload.
+
+1.12  Sat Mar  9 23:50:33 2002
+	- Fix die if all SMTP servers for mail domain are found as
+	  unreachable during SMTP checks. Thanks to Michal
+	  Weinfurtner for bug report.
+        - Added additional status code CU_SMTP_UNREACHABLE which is
+	  set if all SMTP servers for mail domain are found as
+	  unreachable during SMTP checks.
+
+1.11  Thu Mar  7 19:13:29 2002
+	- Fix example in POD documentation.
+
+1.10  Wed Mar  6 01:25:28 2002
+	- Added subroutine 'last_check'. Based on patch from Cloyce
+	  D. Spradling.
+	- Use Test.pm for test suite.
+	- Do not treat email address as invalid if SMTP server replies
+	  with error on MAIL FROM command.
+	- If email is undefined check_email dies instead of
+	  omitting warning.
+	- A lot of documentation fixes: grammar and spelling
+	  clean-up, rewritten section 'IMPORTANT WARNING'.
+	  Thanks to Cloyce D. Spradling for patch.
+	- Changed my email address from m_ilya@agava.com to
+	  ilya@martynov.org in module documentation.
+
 1.02  Fri Jul  6 14:51:06 2001
 	- Fixed minor bug in sample code snippet in pod documentaion.
 	  Thanks to David Olszynski for correction.
