@@ -13,6 +13,7 @@ sub start($) {
 sub run_test($$) {
     my($email, $fail) = @_;
 
+    print "# $email\n";
     my $ok = check_email($email);
     $ok = !$ok if $fail;
 

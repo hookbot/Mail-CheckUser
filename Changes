@@ -1,5 +1,13 @@
 Revision history for Perl module Mail::CheckUser
 
+1.16  Wed Nov 18 09:30:00 2002
+        - Add $Mail::CheckUser::Net_DNS_Resolver feature
+          to allow customizeable Net::DNS::Resolver object.
+        - Utilize udp_timeout feature in Net::DNS
+          to avoid excessive dns delays (Rob Brown).
+        - Do not allow "special" characters in username.
+        - Break RFC by allowing domains with "--"
+
 1.15  Fri Nov  8 00:02:23 2002
         - Minor documentaion and code fixes.
 
