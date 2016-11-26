@@ -24,7 +24,8 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_UNKNOWN_USER
                               CU_SMTP_TIMEOUT
                               CU_SMTP_UNREACHABLE
-                              CU_MAILBOX_FULL)];
+                              CU_MAILBOX_FULL
+                              CU_TRY_AGAIN)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
 $VERSION = '1.22';
@@ -39,6 +40,7 @@ use vars qw($Skip_Network_Checks $Skip_SMTP_Checks
             $NXDOMAIN
             $Timeout $Treat_Timeout_As_Fail $Debug
             $Treat_Full_As_Fail
+            $Treat_Grey_As_Fail
             $Sender_Addr $Helo_Domain $Last_Check);
 
 # if it is true Mail::CheckUser doesn't make network checks
@@ -156,6 +158,7 @@ use constant CU_UNKNOWN_USER     => 4;
 use constant CU_SMTP_TIMEOUT     => 5;
 use constant CU_SMTP_UNREACHABLE => 6;
 use constant CU_MAILBOX_FULL     => 7;
+use constant CU_TRY_AGAIN        => 8;
 
 sub check_email($) {
     my($email) = @_;
@@ -465,6 +468,8 @@ sub check_user_on_host($$$$) {
             return _result(CU_UNKNOWN_USER, 'no such user');
         } elsif($code == 552) {
             return _result(CU_MAILBOX_FULL, 'mailbox full');
+        } elsif($code =~ /^4/) {
+            return _result(CU_TRY_AGAIN, 'temporary delivery failure');
         } else {
             _pm_log "check_user_on_host: unknown error in response";
             return _result(CU_OK, 'unknown error in response');
@@ -511,6 +516,7 @@ sub _result($$) {
     $ok = 1 if $code == CU_MAILBOX_FULL and not $Treat_Full_As_Fail;
     $ok = 1 if $code == CU_DNS_TIMEOUT and not $Treat_Timeout_As_Fail;
     $ok = 1 if $code == CU_SMTP_TIMEOUT and not $Treat_Timeout_As_Fail;
+    $ok = 1 if $code == CU_TRY_AGAIN and not $Treat_Grey_As_Fail;
 
     $Last_Check = { ok     => $ok,
                     code   => $code,
