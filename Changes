@@ -1,5 +1,10 @@
 Revision history for Perl module Mail::CheckUser
 
+1.22  Sat Nov 26 12:00:00 2016
+	- Add Treat_Grey_As_Fail feature.
+	  (See https://postgrey.schweikert.ch/)
+	- Patch by Rob Brown
+
 1.21  Thu Sep 18 12:00:00 2003
 	- Fix cufilter to handle bounce messages better.
 	- Avoid cufilter redundant checking.
