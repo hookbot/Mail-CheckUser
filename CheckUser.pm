@@ -58,6 +58,9 @@ $Treat_Timeout_As_Fail = 0;
 # if it is true Mail::CheckUser treats mailbox full message
 # as failed checks
 $Treat_Full_As_Fail = 0;
+# if it is true Mail::CheckUser treats temporary (400's)
+# as failed checks
+$Treat_Grey_As_Fail = 0;
 # sender addr used in MAIL/RCPT check
 $Sender_Addr = 'check@user.com';
 # sender domain used in HELO SMTP command - if undef lets
@@ -766,6 +769,12 @@ failed.  By default it is false.
 
 If it is true C<Mail::CheckUser> treats error "552 mailbox full"
 as an invalid email and sets CU_MAILBOX_FULL.
+By default it is false.
+
+=item $Mail::CheckUser::Treat_Grey_As_Fail
+
+If it is true C<Mail::CheckUser> treats all 400's errors
+as an invalid email and sets CU_TRY_AGAIN.
 By default it is false.
 
 =item $Mail::CheckUser::Net_DNS_Resolver
