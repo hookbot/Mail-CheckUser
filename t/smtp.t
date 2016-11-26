@@ -1,6 +1,6 @@
 use Mail::CheckUser qw(check_email);
 
-require 't/check.pl';
+require './t/check.pl';
 
 # network test (SMTP check enabled)
 $Mail::CheckUser::Skip_Network_Checks = 0;

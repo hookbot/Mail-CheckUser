@@ -1,3 +1,3 @@
 #!perl -T
 
-do 't/smtp.t';
+do './t/smtp.t';
