@@ -27,7 +27,7 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_MAILBOX_FULL)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.21';
+$VERSION = '1.22';
 
 use Carp;
 use Net::DNS;
