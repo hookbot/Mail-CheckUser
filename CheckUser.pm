@@ -28,7 +28,7 @@ $EXPORT_TAGS{constants} = [qw(CU_OK
                               CU_TRY_AGAIN)];
 push @EXPORT_OK, @{$EXPORT_TAGS{constants}};
 
-$VERSION = '1.23';
+$VERSION = '1.24';
 
 use Carp;
 use Net::DNS;
