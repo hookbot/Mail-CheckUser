@@ -1,5 +1,8 @@
 Revision history for Perl module Mail::CheckUser
 
+1.23  Sat Nov 26 21:00:00 2016
+	- Make sure all tests pass.
+
 1.22  Sat Nov 26 12:00:00 2016
 	- Add Treat_Grey_As_Fail feature.
 	  (See https://postgrey.schweikert.ch/)
