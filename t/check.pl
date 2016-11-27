@@ -4,6 +4,8 @@ use Test;
 
 use Mail::CheckUser qw(check_email);
 
+eval { require Sys::Hostname; $Mail::CheckUser::Helo_Domain = Sys::Hostname::hostname(); };
+
 sub start($) {
     my($test_num) = @_;
 
