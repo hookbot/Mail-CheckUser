@@ -7,8 +7,8 @@ $Mail::CheckUser::Skip_Network_Checks = 0;
 $Mail::CheckUser::Skip_SMTP_Checks = 0;
 $Mail::CheckUser::Timeout = 120;
 
-@ok_emails = qw(bbb@cpan.org brokenmx@yhoo.com);
-@bad_emails = qw(unknown@for.bar freghreucew@hotmail.com);
+@ok_emails = qw(ilya@martynov.org brokenmx@yhoo.com);
+@bad_emails = qw(unknown@for.bar freghrexquczew@gmail.com);
 
 start(scalar(@ok_emails) + scalar(@bad_emails));
 
