@@ -1,5 +1,9 @@
 Revision history for Perl module Mail::CheckUser
 
+1.24  Sat Nov 26 22:00:00 2016
+	- Prevent inadvertent CBL blocks during test.
+	  (Use http://www.abuseat.org/lookup.cgi to remove)
+
 1.23  Sat Nov 26 21:00:00 2016
 	- Make sure all tests pass.
 
